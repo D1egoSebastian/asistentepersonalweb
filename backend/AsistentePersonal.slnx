@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AsistentePersonal.Tests/AsistentePersonal.Tests.csproj" />
+  <Project Path="AsistentePersonal/AsistentePersonal.csproj" />
+</Solution>

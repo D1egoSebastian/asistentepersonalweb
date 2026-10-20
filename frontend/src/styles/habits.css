@@ -1,0 +1,209 @@
+:root {
+  --color-green: #1b5e20;
+  --color-red: #b71c1c;
+  --color-pending: #424242;
+  --color-surface: #ffffff;
+  --color-text: #1a1a1a;
+  --color-muted: #5f5f5f;
+  --color-border: #d0d0d0;
+  --color-focus: #1565c0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-surface: #1e1e1e;
+    --color-text: #f2f2f2;
+    --color-muted: #b0b0b0;
+    --color-border: #3a3a3a;
+    --color-green: #81c784;
+    --color-red: #ef9a9a;
+    --color-pending: #bdbdbd;
+    --color-focus: #90caf9;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: system-ui, sans-serif;
+  line-height: 1.4;
+}
+
+.app {
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.habits-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.habits-page__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.auth-page {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.error-banner {
+  padding: 12px;
+  border-left: 6px solid var(--color-red);
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+.habit-list {
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.habit-card {
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-left: 8px solid var(--color-pending);
+  border-radius: 8px;
+}
+
+.habit-card--green {
+  border-left-color: var(--color-green);
+}
+
+.habit-card--red {
+  border-left-color: var(--color-red);
+}
+
+.habit-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.habit-card__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+
+.habit-card__status {
+  font-weight: 700;
+}
+
+.habit-card--green .habit-card__status {
+  color: var(--color-green);
+}
+
+.habit-card--red .habit-card__status {
+  color: var(--color-red);
+}
+
+.habit-card__description,
+.habit-card__meta,
+.habit-card__progress {
+  margin: 4px 0;
+  color: var(--color-muted);
+}
+
+.habit-card__days,
+.habit-card__actions,
+.habit-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.habit-card__days button[aria-pressed="true"] {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-surface);
+  font-weight: 700;
+}
+
+.habit-form {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.habit-form h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.habit-form label {
+  display: grid;
+  gap: 4px;
+}
+
+.habit-form input,
+.habit-form textarea {
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.habit-form textarea {
+  min-height: 80px;
+}
+
+.habit-form fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.habit-form__fixed {
+  color: var(--color-muted);
+}
+
+.habit-list__empty {
+  color: var(--color-muted);
+}
