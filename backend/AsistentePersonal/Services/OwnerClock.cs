@@ -1,6 +1,6 @@
 namespace AsistentePersonal.Services;
 
-// The only code that reads the clock. "Today" is a calendar day in the owner's zone (spec D-1).
+// The only code that decides which day is "today": a calendar day in the owner's zone (spec D-1, plan D-T11).
 public static class OwnerClock
 {
     public const string TimeZoneVariable = "OWNER_TIME_ZONE";

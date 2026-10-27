@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getStatus } from "./api/authApi.js";
-import { setUnauthorizedHandler } from "./api/habitsApi.js";
+import { setUnauthorizedHandler } from "./api/http.js";
 import { clearToken, readToken } from "./api/session.js";
 import ErrorBanner from "./components/ErrorBanner.jsx";
 import HabitsPage from "./pages/HabitsPage.jsx";

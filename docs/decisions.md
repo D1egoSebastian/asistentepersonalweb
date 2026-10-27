@@ -42,3 +42,12 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Por qué no alcanza lo que ya hay:** sin este paquete, el comando `dotnet ef migrations add` no existe, y el esquema de PostgreSQL tendría que escribirse y mantenerse a mano.
 - **Alternativa descartada:** mantener scripts SQL de creación de tablas a mano. Se descarta porque cada cambio de modelo exigiría editar el script y el modelo por separado, y es fácil que queden desincronizados.
 - **Nota:** este paquete se usa solo en tiempo de desarrollo, no en la aplicación publicada.
+
+## Extensión `unaccent` de PostgreSQL
+
+- **Problema que resuelve:** la búsqueda de ideas ignora acentos: "cancion" encuentra "canción" y al revés (spec 003, CA-4.1, D-2).
+- **Por qué no alcanza lo que ya hay:** `ILIKE` y `lower()` ignoran mayúsculas, pero no tildes. PostgreSQL no trae otra función integrada que quite acentos. `unaccent` no es un paquete externo: viene con la instalación de PostgreSQL (módulo `contrib`), y la búsqueda sigue corriendo en la base (plan D-T2).
+- **Alternativa descartada 1:** quitar tildes en C# y filtrar en memoria. Obliga a traer todas las ideas del dueño en cada búsqueda y no cumple RNF-3 (5.000 ideas en menos de 1 segundo).
+- **Alternativa descartada 2:** guardar una columna aparte con el texto sin tildes. Duplica el dato y hay que mantenerla en cada escritura.
+- **Riesgo:** el hosting de PostgreSQL tiene que permitir `CREATE EXTENSION unaccent`. Se verifica al elegir hosting (plan §8).
+- **Verificado:** el archivo `unaccent.control` existe en la instalación local de PostgreSQL 18. Todavía no está creada en `asistente_dev` ni en `asistente_test`: eso ocurre en la migración `AddIdeas` (T07).

@@ -1,41 +1,23 @@
+import { request } from "./http.js";
 import { saveToken } from "./session.js";
 
-// Public calls to start a session. They never send a token, and their errors carry the API's own message
-// (for example, "Email o contraseña incorrectos."), not the "session expired" message of habitsApi.
+// Public calls to start a session. They send no token and never end one (see http.js).
+// Their errors carry the API's own message, for example "Email o contraseña incorrectos.".
 const BASE_PATH = "/api/auth";
 
-async function request(method, path, body) {
-  let response;
-  try {
-    response = await fetch(`${BASE_PATH}${path}`, {
-      method,
-      headers: body === undefined ? {} : { "Content-Type": "application/json" },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-  } catch {
-    throw new Error("No hay conexión con el servidor.");
-  }
-
-  const data = await response.json().catch(() => null);
-  if (!response.ok) {
-    // The status lets the screens react to specific cases, like 409 (the account already exists).
-    const error = new Error(data?.message ?? "No se pudo completar la acción. Vuelve a intentarlo.");
-    error.status = response.status;
-    throw error;
-  }
-  return data;
-}
+const publicRequest = (method, path, body) =>
+  request(method, `${BASE_PATH}${path}`, body, { session: false });
 
 export function getStatus() {
-  return request("GET", "/status");
+  return publicRequest("GET", "/status");
 }
 
 export async function setup(email, password, passwordConfirmation) {
-  const session = await request("POST", "/setup", { email, password, passwordConfirmation });
+  const session = await publicRequest("POST", "/setup", { email, password, passwordConfirmation });
   saveToken(session.token);
 }
 
 export async function login(email, password) {
-  const session = await request("POST", "/login", { email, password });
+  const session = await publicRequest("POST", "/login", { email, password });
   saveToken(session.token);
 }

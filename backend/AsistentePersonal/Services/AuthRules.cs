@@ -14,7 +14,7 @@ public static partial class AuthRules
 
     public static string? ValidateEmail(string? email)
     {
-        if (HabitRules.IsBlank(email))
+        if (TextRules.IsBlank(email))
         {
             return "El email es obligatorio.";
         }
@@ -31,12 +31,12 @@ public static partial class AuthRules
     // Length counts what the user sees as characters, like habit names (an emoji is 1).
     public static string? ValidatePassword(string? password)
     {
-        if (password is null || HabitRules.CountChars(password) < MinPasswordLength)
+        if (password is null || TextRules.CountChars(password) < MinPasswordLength)
         {
             return $"La contraseña debe tener al menos {MinPasswordLength} caracteres.";
         }
 
-        if (HabitRules.CountChars(password) > MaxPasswordLength)
+        if (TextRules.CountChars(password) > MaxPasswordLength)
         {
             return $"La contraseña no puede tener más de {MaxPasswordLength} caracteres.";
         }

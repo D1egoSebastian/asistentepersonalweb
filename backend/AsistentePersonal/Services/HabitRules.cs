@@ -1,4 +1,3 @@
-using System.Globalization;
 using AsistentePersonal.Models;
 
 namespace AsistentePersonal.Services;
@@ -13,43 +12,15 @@ public static class HabitRules
     public const int MinWeeklyGoal = 1;
     public const int MaxWeeklyGoal = 7;
 
-    // True when there is nothing the user can see: only spaces or invisible characters.
-    public static bool IsBlank(string? text)
-    {
-        if (text is null)
-        {
-            return true;
-        }
-
-        return text.All(c => char.IsWhiteSpace(c) || char.GetUnicodeCategory(c) == UnicodeCategory.Format);
-    }
-
-    // Trims the text. Returns null when it is blank, so the caller can store "no description".
-    public static string? Normalize(string? text)
-    {
-        if (IsBlank(text))
-        {
-            return null;
-        }
-
-        return text!.Trim();
-    }
-
-    // Counts what the user sees as characters (an emoji or a letter with an accent is 1).
-    public static int CountChars(string text)
-    {
-        return new StringInfo(text).LengthInTextElements;
-    }
-
     public static string? ValidateName(string? name)
     {
-        var normalized = Normalize(name);
+        var normalized = TextRules.Normalize(name);
         if (normalized is null)
         {
             return "El nombre es obligatorio.";
         }
 
-        if (CountChars(normalized) > MaxNameLength)
+        if (TextRules.CountChars(normalized) > MaxNameLength)
         {
             return $"El nombre no puede tener más de {MaxNameLength} caracteres.";
         }
@@ -60,13 +31,13 @@ public static class HabitRules
     // The description is optional: a blank one is valid and is stored as "no description".
     public static string? ValidateDescription(string? description)
     {
-        var normalized = Normalize(description);
+        var normalized = TextRules.Normalize(description);
         if (normalized is null)
         {
             return null;
         }
 
-        if (CountChars(normalized) > MaxDescriptionLength)
+        if (TextRules.CountChars(normalized) > MaxDescriptionLength)
         {
             return $"La descripción no puede tener más de {MaxDescriptionLength} caracteres.";
         }

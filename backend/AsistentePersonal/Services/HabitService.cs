@@ -21,12 +21,12 @@ public class HabitService(AppDbContext db)
             return ServiceResult<Habit>.Invalid(error);
         }
 
-        var cleanName = HabitRules.Normalize(name)!;
+        var cleanName = TextRules.Normalize(name)!;
         var habit = new Habit
         {
             UserId = userId,
             Name = cleanName,
-            Description = HabitRules.Normalize(description),
+            Description = TextRules.Normalize(description),
             Frequency = frequency,
             WeeklyGoal = frequency == Frequency.Weekly ? weeklyGoal : null,
             CreatedOn = today,
@@ -74,14 +74,14 @@ public class HabitService(AppDbContext db)
             return ServiceResult.Invalid(error);
         }
 
-        var cleanName = HabitRules.Normalize(name)!;
+        var cleanName = TextRules.Normalize(name)!;
         if (await NameIsTakenAsync(userId, cleanName, exceptHabitId: habitId))
         {
             return ServiceResult.Invalid(NameTakenMessage);
         }
 
         habit.Name = cleanName;
-        habit.Description = HabitRules.Normalize(description);
+        habit.Description = TextRules.Normalize(description);
         return await SaveHabitChangesAsync();
     }
 
@@ -160,7 +160,7 @@ public class HabitService(AppDbContext db)
             return error;
         }
 
-        var cleanName = HabitRules.Normalize(name)!;
+        var cleanName = TextRules.Normalize(name)!;
         return await NameIsTakenAsync(userId, cleanName, exceptHabitId: null) ? NameTakenMessage : null;
     }
 

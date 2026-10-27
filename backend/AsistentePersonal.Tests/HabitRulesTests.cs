@@ -8,65 +8,6 @@ public class HabitRulesTests
     // Fixed "today" so the tests never depend on the real clock.
     private static readonly DateOnly Today = new(2026, 10, 16);
 
-    // ---- T08: text helpers ----
-
-    [Fact]
-    public void Normalize_TrimsSpacesAtStartAndEnd()
-    {
-        Assert.Equal("Leer", HabitRules.Normalize("  Leer  "));
-    }
-
-    [Fact]
-    public void Normalize_ReturnsNull_WhenTextIsOnlySpaces()
-    {
-        Assert.Null(HabitRules.Normalize("   "));
-    }
-
-    [Fact]
-    public void Normalize_ReturnsNull_WhenTextIsNull()
-    {
-        Assert.Null(HabitRules.Normalize(null));
-    }
-
-    [Fact]
-    public void Normalize_ReturnsNull_WhenTextIsOnlyInvisibleCharacters()
-    {
-        // U+200B (zero width space) and U+200D (zero width joiner) are invisible
-        Assert.Null(HabitRules.Normalize("​‍"));
-    }
-
-    [Fact]
-    public void IsBlank_TrueForInvisibleCharacters()
-    {
-        Assert.True(HabitRules.IsBlank("​ ‍"));
-    }
-
-    [Fact]
-    public void IsBlank_FalseWhenTextHasVisibleCharacters()
-    {
-        Assert.False(HabitRules.IsBlank(" a "));
-    }
-
-    [Fact]
-    public void CountChars_CountsAsciiLettersOneByOne()
-    {
-        Assert.Equal(3, HabitRules.CountChars("abc"));
-    }
-
-    [Fact]
-    public void CountChars_CountsEmojiAsOneCharacter()
-    {
-        // U+1F600 is a single emoji, stored as two UTF-16 code units
-        Assert.Equal(1, HabitRules.CountChars("\U0001F600"));
-    }
-
-    [Fact]
-    public void CountChars_CountsLetterWithAccentAsOneCharacter()
-    {
-        // "e" followed by a combining acute accent: what the user sees is one letter
-        Assert.Equal(1, HabitRules.CountChars("é"));
-    }
-
     // ---- T09: name and description ----
 
     [Fact]
