@@ -64,3 +64,15 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Problema que resuelve:** es la librería de modelo OpenAPI que usa `Microsoft.AspNetCore.OpenApi`. El código del proyecto no la usa directamente.
 - **Por qué no alcanza lo que ya hay:** la referencia explícita fija la versión 2.7.5, la misma que ya trae `Microsoft.AspNetCore.OpenApi` 10.0.10 como dependencia.
 - **Pendiente:** confirmar si la referencia explícita hace falta o si puede quitarse sin cambiar la versión resuelta.
+
+## chart.js 4.5.1
+
+- **Problema que resuelve:** dibuja el gráfico de tendencia de la pestaña "Métricas" (spec 004, RF-7): una línea con 12 puntos semanales, ejes de 0 a 100 %, huecos donde una semana no tiene datos y escalado en un `canvas`.
+- **Por qué no alcanza lo que ya hay:** el stack no tiene librería de gráficos. Con CSS plano no se dibuja una línea con huecos y ejes sin escribir a mano un pequeño motor de gráficos (escalas, trazado, puntos, tooltip). El dueño eligió Chart.js en la spec 004 (D-5).
+- **Versión:** se fija `4.5.1` exacta (sin `^`, instalada con `--save-exact`). La última, 4.6.1, se publicó el 22-10-2026 y en npm no figura una 4.6.0; es demasiado reciente para adoptarla sin uso previo. La 4.5.1 se publicó el 13-10-2025.
+- **Licencia y dependencias:** MIT. Trae una sola dependencia transitiva (`@kurkle/color`, para mezclar colores) y no declara `peerDependencies`. Es un paquete ESM, compatible con Vite 8; `npm run build` lo confirma al instalarla.
+- **Cómo se usa (plan 004, D-T9):** se importan y registran solo `LineController`, `LineElement`, `PointElement`, `LinearScale`, `CategoryScale` y `Tooltip`, para que Vite deje fuera el resto. La configuración sale de una función pura y testeada (`trendChartConfig`), sin animación.
+- **Alternativa descartada 1:** `react-chartjs-2`. Es una segunda dependencia para envolver un solo gráfico; un componente propio con `useEffect` crea y destruye el gráfico en pocas líneas.
+- **Alternativa descartada 2:** `chart.js/auto`. Registra todos los tipos de gráfico y plugins, y suma al bundle código que la app no usa.
+- **Alternativa descartada 3:** Recharts. Depende de React y de varias librerías de D3, y es más pesada para un solo gráfico de líneas. Cierra la decisión "Chart.js vs. Recharts" de `CLAUDE.md`.
+- **Accesibilidad:** el `canvas` no se lee con lector de pantalla, así que la tabla de tendencia (`TrendTable`) queda siempre visible como alternativa en texto (RNF-4).
