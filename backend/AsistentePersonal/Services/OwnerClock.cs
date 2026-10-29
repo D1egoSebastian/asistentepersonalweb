@@ -30,9 +30,8 @@ public static class OwnerClock
         }
     }
 
-    public static DateOnly Today()
-    {
-        var ownerZone = ResolveZone(Environment.GetEnvironmentVariable(TimeZoneVariable));
-        return TodayAt(DateTimeOffset.UtcNow, ownerZone);
-    }
+    // The owner's zone, read from the environment on each call.
+    public static TimeZoneInfo Zone() => ResolveZone(Environment.GetEnvironmentVariable(TimeZoneVariable));
+
+    public static DateOnly Today() => TodayAt(DateTimeOffset.UtcNow, Zone());
 }

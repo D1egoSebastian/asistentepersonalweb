@@ -51,3 +51,16 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Alternativa descartada 2:** guardar una columna aparte con el texto sin tildes. Duplica el dato y hay que mantenerla en cada escritura.
 - **Riesgo:** el hosting de PostgreSQL tiene que permitir `CREATE EXTENSION unaccent`. Se verifica al elegir hosting (plan §8).
 - **Verificado:** el archivo `unaccent.control` existe en la instalación local de PostgreSQL 18. Todavía no está creada en `asistente_dev` ni en `asistente_test`: eso ocurre en la migración `AddIdeas` (T07).
+
+## Microsoft.AspNetCore.OpenApi 10.0.10
+
+- **Problema que resuelve:** publica el documento OpenAPI de la API (`AddOpenApi` y `MapOpenApi` en `Program.cs`), para revisar los endpoints sin leer el código.
+- **Por qué no alcanza lo que ya hay:** el framework no genera ese documento por sí solo; sin este paquete no existen `AddOpenApi` ni `MapOpenApi`.
+- **Alternativa descartada:** escribir el JSON de OpenAPI a mano. Se descarta porque habría que mantenerlo igual que los endpoints, y es fácil que se desincronicen.
+- **Nota:** `MapOpenApi` solo se activa en desarrollo (`Program.cs`, dentro de `IsDevelopment()`).
+
+## Microsoft.OpenApi 2.7.5 (referencia directa)
+
+- **Problema que resuelve:** es la librería de modelo OpenAPI que usa `Microsoft.AspNetCore.OpenApi`. El código del proyecto no la usa directamente.
+- **Por qué no alcanza lo que ya hay:** la referencia explícita fija la versión 2.7.5, la misma que ya trae `Microsoft.AspNetCore.OpenApi` 10.0.10 como dependencia.
+- **Pendiente:** confirmar si la referencia explícita hace falta o si puede quitarse sin cambiar la versión resuelta.

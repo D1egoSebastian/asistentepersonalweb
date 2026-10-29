@@ -4,15 +4,17 @@ import { setUnauthorizedHandler } from "./api/http.js";
 import { clearToken, readToken } from "./api/session.js";
 import ErrorBanner from "./components/ErrorBanner.jsx";
 import HabitsPage from "./pages/HabitsPage.jsx";
+import IdeasPage from "./pages/IdeasPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SetupPage from "./pages/SetupPage.jsx";
 
 const SESSION_EXPIRED = "Tu sesión expiró. Vuelve a iniciar sesión.";
 
-// Decides which screen to show: first use, sign in, or the habits (spec 002, plan §4).
+// Decides which screen to show: first use, sign in, or the app with its habits and ideas tabs (spec 002, plan §4).
 export default function App() {
   const [screen, setScreen] = useState("loading");
   const [notice, setNotice] = useState(null);
+  const [tab, setTab] = useState("habits");
 
   const decideScreen = useCallback(async () => {
     try {
@@ -20,7 +22,7 @@ export default function App() {
       if (!hasOwner) {
         setScreen("setup");
       } else {
-        setScreen(readToken() ? "habits" : "login");
+        setScreen(readToken() ? "app" : "login");
       }
     } catch (err) {
       setNotice(err.message);
@@ -46,7 +48,7 @@ export default function App() {
 
   function handleSessionStarted() {
     setNotice(null);
-    setScreen("habits");
+    setScreen("app");
   }
 
   // "Salir" only clears this browser's session (spec 002, D-2).
@@ -71,7 +73,25 @@ export default function App() {
         <SetupPage onSessionStarted={handleSessionStarted} onAccountExists={handleAccountExists} />
       )}
       {screen === "login" && <LoginPage notice={notice} onSessionStarted={handleSessionStarted} />}
-      {screen === "habits" && <HabitsPage onLogout={handleLogout} />}
+      {screen === "app" && (
+        <>
+          <header className="app-header">
+            <nav className="app-tabs" aria-label="Secciones">
+              <button type="button" aria-pressed={tab === "habits"} onClick={() => setTab("habits")}>
+                Hábitos
+              </button>
+              <button type="button" aria-pressed={tab === "ideas"} onClick={() => setTab("ideas")}>
+                Ideas
+              </button>
+            </nav>
+            <button type="button" onClick={handleLogout}>
+              Salir
+            </button>
+          </header>
+          {tab === "habits" && <HabitsPage />}
+          {tab === "ideas" && <IdeasPage />}
+        </>
+      )}
     </main>
   );
 }

@@ -44,6 +44,7 @@ builder.Services.AddSingleton(sessionTokens);
 builder.Services.AddSingleton<PasswordHasher<User>>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<HabitService>();
+builder.Services.AddScoped<IdeaService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,171 @@
+/* Shell: the tabs and "Salir", shared by the habits and ideas screens. */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.app-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.app-tabs button[aria-pressed="true"],
+.idea-filters__tabs button[aria-pressed="true"] {
+  border-color: var(--color-focus);
+  font-weight: 600;
+}
+
+/* Ideas screen */
+.ideas-page {
+  display: grid;
+  gap: 16px;
+}
+
+.ideas-page h1 {
+  margin: 8px 0 0;
+  font-size: 1.5rem;
+}
+
+.idea-composer,
+.idea-card,
+.idea-conflict {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.idea-composer label,
+.idea-filters label,
+.tag-input label {
+  display: grid;
+  gap: 4px;
+}
+
+.idea-composer textarea,
+.idea-filters input,
+.idea-filters select,
+.tag-input input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.idea-composer textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.idea-composer__actions,
+.idea-card__actions,
+.idea-filters__tabs,
+.idea-list__empty {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.idea-list__empty {
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--color-muted);
+}
+
+.idea-filters {
+  display: grid;
+  gap: 12px;
+}
+
+.tag-input {
+  display: grid;
+  gap: 8px;
+}
+
+.tag-input__chips,
+.tag-input__suggestions,
+.idea-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.tag-chip button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.tag-input__hint,
+.idea-card__meta {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.idea-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Muted colors instead of opacity: opacity on hundreds of cards made the Archivadas section take ~1.7 s (RNF-3). */
+.idea-card--archived {
+  border-style: dashed;
+  color: var(--color-muted);
+}
+
+.idea-card__summary {
+  justify-self: start;
+  padding: 0;
+  border: none;
+  background: none;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.idea-card__text,
+.idea-conflict__text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.idea-conflict {
+  border-color: var(--color-red);
+}
+
+.idea-conflict p {
+  margin: 0;
+}
+
+.idea-conflict__label {
+  font-weight: 600;
+}

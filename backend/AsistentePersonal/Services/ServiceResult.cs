@@ -17,6 +17,10 @@ public sealed record ServiceResult(ResultStatus Status, string? Message = null)
     public static ServiceResult Invalid(string message) => new(ResultStatus.Invalid, message);
 
     public static ServiceResult NotFound() => new(ResultStatus.NotFound, HabitService.NotFoundMessage);
+
+    public static ServiceResult NotFound(string message) => new(ResultStatus.NotFound, message);
+
+    public static ServiceResult Conflict(string message) => new(ResultStatus.Conflict, message);
 }
 
 // Outcome of a use case that returns a value when it succeeds.
@@ -27,6 +31,8 @@ public sealed record ServiceResult<T>(ResultStatus Status, T? Value = default, s
     public static ServiceResult<T> Invalid(string message) => new(ResultStatus.Invalid, default, message);
 
     public static ServiceResult<T> NotFound() => new(ResultStatus.NotFound, default, HabitService.NotFoundMessage);
+
+    public static ServiceResult<T> NotFound(string message) => new(ResultStatus.NotFound, default, message);
 
     public static ServiceResult<T> Conflict(string message) => new(ResultStatus.Conflict, default, message);
 

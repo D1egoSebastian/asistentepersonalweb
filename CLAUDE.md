@@ -69,13 +69,15 @@ Crear una plataforma donde pueda:
 Controllers/        - Endpoints HTTP
 Models/            - Entidades de BD (Habit, HabitLog, Idea, User, etc.)
 DTOs/              - Data Transfer Objects para las respuestas
-Services/          - Casos de uso y validaciones de escritura (HabitService, HabitRules), reloj del dueño (OwnerClock)
+Services/          - Casos de uso y validaciones de escritura (HabitService, HabitRules, IdeaService, IdeaRules, TextRules), reloj del dueño (OwnerClock)
 Data/              - DbContext, migrations
 ```
 
 Sin capa `Repositories/`: EF Core ya cumple ese rol, así que los Services usan el `DbContext` directamente.
 
-Las rachas, el estado y el avance semanal se calculan en el frontend, en `src/logic/`, con funciones puras que reciben `today` como parámetro (decisión D-T1 del plan de la spec 001). La lógica de cada pantalla vive en `src/hooks/`; los componentes de `src/pages/` y `src/components/` solo muestran.
+Las rachas, el estado y el avance semanal se calculan en el frontend, en `src/logic/`, con funciones puras que reciben `today` como parámetro (decisión D-T1 del plan de la spec 001). La lógica de cada pantalla vive en `src/hooks/`; los componentes de `src/pages/` y `src/components/` solo muestran. Las sugerencias y las opciones de filtro de etiquetas son funciones puras en `src/logic/tags.js`, y las llamadas a la API salen de `src/api/` (una función por endpoint, sobre `http.js`).
+
+La app tiene dos pestañas tras iniciar sesión: "Hábitos" e "Ideas" (la barra superior también tiene "Salir"). En ideas, la búsqueda, el filtro y el orden los hace el backend: el frontend pide la sección, espera 300 ms tras la última tecla de la búsqueda y muestra el resultado.
 
 ## Variables de entorno
 
@@ -93,10 +95,14 @@ Ninguna va en `appsettings*.json` ni en el repositorio.
 - `GET /api/auth/status` - Indica si ya existe la cuenta del dueño (público)
 - `POST /api/auth/setup` - Crea la cuenta del dueño, solo si no existe (público)
 - `POST /api/auth/login` - Inicia sesión y devuelve el token (público)
+- `GET /api/ideas?archived=false&search=&tag=` - Traer una sección (activas o archivadas), con búsqueda y filtro opcionales. Devuelve resumen, no el texto completo
+- `GET /api/ideas/{id}` - Abrir una idea completa, activa o archivada, con su `version`
 - `POST /api/ideas` - Crear idea
-- `GET /api/ideas` - Traer todas las ideas
-- `PUT /api/ideas/{id}` - Editar idea
+- `PUT /api/ideas/{id}` - Editar texto y etiquetas; exige la `version` que el dueño abrió (si no coincide, 409)
+- `POST /api/ideas/{id}/archive` - Archivar idea
+- `POST /api/ideas/{id}/restore` - Restaurar idea
 - `DELETE /api/ideas/{id}` - Eliminar idea
+- `GET /api/ideas/tags` - Etiquetas del dueño con cuántas ideas activas y archivadas tiene cada una
 
 - `POST /api/habits` - Crear hábito
 - `GET /api/habits` - Traer todos los hábitos, con `today` y el historial de fechas de cada uno
@@ -135,9 +141,14 @@ Ninguna va en `appsettings*.json` ni en el repositorio.
 ### Idea
 - id
 - userId (FK)
-- content
+- text (sin límite de líneas; máximo 5.000 caracteres)
+- tags (`text[]`; hasta 10 por idea, máximo 30 caracteres cada una, sin comas)
 - createdAt
 - updatedAt
+- archivedAt (opcional: si tiene fecha, la idea está archivada)
+- version (`xmin` de PostgreSQL, sin columna propia: cambia en cada escritura y detecta ediciones simultáneas)
+
+La base necesita la extensión `unaccent`: la migración `AddIdeas` la crea con `CREATE EXTENSION IF NOT EXISTS unaccent`. La búsqueda ignora tildes con ella (decisión en `docs/decisions.md`).
 
 ## Próximas Decisiones
 

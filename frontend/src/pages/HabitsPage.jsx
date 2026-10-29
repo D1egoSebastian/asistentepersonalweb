@@ -4,7 +4,7 @@ import HabitList from "../components/HabitList.jsx";
 import { useHabits } from "../hooks/useHabits.js";
 
 // Shows the habits screen. All the logic lives in useHabits (constitution, principle 3).
-export default function HabitsPage({ onLogout }) {
+export default function HabitsPage() {
   const habits = useHabits();
 
   return (
@@ -17,9 +17,6 @@ export default function HabitsPage({ onLogout }) {
               Nuevo hábito
             </button>
           )}
-          <button type="button" onClick={onLogout}>
-            Salir
-          </button>
         </div>
       </header>
 

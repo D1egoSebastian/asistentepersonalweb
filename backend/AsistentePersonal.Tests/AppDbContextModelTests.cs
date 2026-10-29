@@ -57,4 +57,37 @@ public class AppDbContextModelTests
 
         Assert.Equal(typeof(string), property.GetProviderClrType());
     }
+
+    [Fact]
+    public void Idea_StoresTagsAsTextArray()
+    {
+        using var context = CreateContext();
+        var property = context.Model.FindEntityType(typeof(Idea))!.FindProperty(nameof(Idea.Tags))!;
+
+        Assert.Equal("text[]", property.GetColumnType());
+    }
+
+    [Fact]
+    public void Idea_HasIndexOnUserArchivedAndCreation()
+    {
+        // Lists filter by owner and section, and sort by creation (plan §3.2).
+        using var context = CreateContext();
+        var ideaType = context.Model.FindEntityType(typeof(Idea))!;
+
+        var index = ideaType.GetIndexes()
+            .Single(i => i.Properties.Select(p => p.Name).SequenceEqual(new[] { "UserId", "ArchivedAt", "CreatedAt" }));
+
+        Assert.False(index.IsUnique);
+    }
+
+    [Fact]
+    public void Idea_VersionIsPostgresRowVersion_ThatChangesOnEveryWrite()
+    {
+        // Version maps to xmin (plan D-T12): no column is created, and EF reads it after each write.
+        using var context = CreateContext();
+        var property = context.Model.FindEntityType(typeof(Idea))!.FindProperty(nameof(Idea.Version))!;
+
+        Assert.True(property.IsConcurrencyToken);
+        Assert.Equal(Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.OnAddOrUpdate, property.ValueGenerated);
+    }
 }

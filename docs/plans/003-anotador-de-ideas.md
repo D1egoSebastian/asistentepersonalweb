@@ -223,6 +223,23 @@ Lo que es solo interfaz: foco en el cuadro al abrir, Ctrl+Enter para guardar, ch
 
 Con 5.000 ideas y 200 etiquetas generadas en `asistente_test`, medir lista, búsqueda y filtro como en la spec 001. Si la búsqueda supera 1 segundo, la mejora prevista es un índice trigram sobre el texto sin acentos (requiere otra extensión, se registraría en `decisions.md`).
 
+**Medición (fase 7, T23).** Datos en `asistente_test`: 5.000 ideas (1.000 archivadas) y 200 etiquetas. Se midió la compilación de producción (`vite preview`) en el navegador de escritorio de la máquina de desarrollo, desde la acción hasta que la lista muestra el número esperado de tarjetas. La búsqueda incluye la espera de 300 ms. Peor caso de dos corridas, en milisegundos:
+
+| Acción | Tiempo |
+|---|---|
+| Abrir Ideas (4.000 activas) | 631 |
+| Buscar "sueño" (1.000) | 603 |
+| Buscar "medir sueño" (1.000) | 572 |
+| Vaciar la búsqueda (4.000) | 831 (peor caso) |
+| Filtrar por "etiqueta5" (25) | 95 |
+| Quitar el filtro (4.000) | 549 |
+| Ir a Archivadas (1.000) | 691 |
+| Volver a Activas (4.000) | 727 |
+
+El API responde en 0,01 a 0,12 s en cada caso. Con la primera versión de las tarjetas archivadas (`opacity: 0.75`), Archivadas tardaba 1,6 a 1,75 s: pintar 1.000 elementos con opacidad es lo que costaba. Se reemplazó por color atenuado y borde punteado (`ideas.css`), y bajó a 0,6–0,7 s.
+
+El peor caso queda a unos 170 ms del límite en esta máquina. Si la lista crece, la solución prevista es paginar; la spec no garantiza el tiempo por encima de 5.000 ideas.
+
 ## 7. Matriz de cobertura
 
 | RF | Backend | Frontend | Tests |
@@ -239,6 +256,6 @@ Con 5.000 ideas y 200 etiquetas generadas en `asistente_test`, medir lista, bús
 ## 8. Riesgos
 
 - **`unaccent` en otra base:** está disponible en la instalación local de PostgreSQL 18, pero cada base donde se publique la app tiene que permitir `CREATE EXTENSION unaccent`. Se verifica cuando se elija el hosting.
-- **Traducción de consultas sobre `text[]`:** la lectura de etiquetas distintas, el filtro en minúsculas y la búsqueda dentro de las etiquetas se verifican en sus tareas (T08 y T10). Si EF Core no traduce alguna, se usa una consulta SQL parametrizada con `unnest`.
+- **Traducción de consultas sobre `text[]`:** la lectura de etiquetas distintas, el filtro en minúsculas y la búsqueda dentro de las etiquetas se verifican en sus tareas (T08 y T10). Verificado en la fase 3: `unaccent` y `Any` sobre `text[]` se traducen a SQL. Las etiquetas del dueño se leen en memoria para crear y contar, sin `SelectMany` en SQL; T23 (RNF-3) mide si hace falta cambiarlo. `EF.Functions.ILike` necesita el carácter de escape explícito: sin él, EF emite `ESCAPE ''` y el `%` buscado como texto coincide con todo.
 - **`xmin` como versión:** hay que confirmar que Npgsql 10 lo mapea con `IsRowVersion()` sin crear una columna nueva en la migración, y que el `BeforeSaveInterceptor` puede simular otra pestaña guardando en el medio. Se verifica en T07 y T11.
 - **Mover `IsBlank`, `Normalize` y `CountChars` a `TextRules`:** toca código de hábitos que ya funciona. Los tests de hábitos tienen que seguir pasando sin cambios en su comportamiento.

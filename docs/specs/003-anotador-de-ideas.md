@@ -128,6 +128,7 @@ Notación EARS: *ubicuo* ("El sistema deberá…"), *evento* ("Cuando…"), *est
 - **Etiqueta usada solo en ideas archivadas:** se sigue sugiriendo (CA-6.4), pero no aparece en el filtro de la lista principal (CA-4.6).
 - **Quitar la última idea que usaba una etiqueta:** la etiqueta deja de sugerirse (CA-2.9).
 - **Archivar en una pestaña y editar en otra:** la edición se rechaza por estar archivada (CA-5.4), y la lista se actualiza.
+- **Editar en una pestaña y archivar en otra:** el archivado se aplica a la versión más reciente, porque no cambia el texto ni las etiquetas. La edición que quedó abierta se rechaza al guardar, con el aviso de idea archivada (CA-5.4).
 - **Eliminar en una pestaña y editar, archivar o restaurar en otra:** se rechaza con "Esta idea ya no existe." (CA-8.1).
 - **Búsqueda con `%` o `_`:** se buscan como caracteres comunes (CA-4.5).
 - **Búsqueda sin tilde:** "cancion" encuentra "canción", y al revés (CA-4.1).
