@@ -39,3 +39,10 @@ const DATE_FORMAT = new Intl.DateTimeFormat("es", {
 export function formatDate(date) {
   return DATE_FORMAT.format(toUtcMs(date));
 }
+
+const SHORT_DATE_FORMAT = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", timeZone: "UTC" });
+
+// "2026-08-03" becomes "3 ago". Used where the full date does not fit, like the chart axis.
+export function formatShortDate(date) {
+  return SHORT_DATE_FORMAT.format(toUtcMs(date));
+}

@@ -1,6 +1,7 @@
 import ErrorBanner from "../components/ErrorBanner.jsx";
 import HabitMetricsCard from "../components/HabitMetricsCard.jsx";
 import MetricsSummary from "../components/MetricsSummary.jsx";
+import TrendChart from "../components/TrendChart.jsx";
 import TrendTable from "../components/TrendTable.jsx";
 import { useMetrics } from "../hooks/useMetrics.js";
 
@@ -34,6 +35,7 @@ export default function MetricsPage() {
 
           <section className="metrics-trend" aria-labelledby="metrics-trend-title">
             <h2 id="metrics-trend-title">Últimas 12 semanas</h2>
+            {view.hasTrend && <TrendChart trend={view.trend} />}
             <TrendTable trend={view.trend} hasTrend={view.hasTrend} />
           </section>
 

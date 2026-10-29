@@ -95,3 +95,16 @@ describe("formatDate", () => {
     assert.equal(formatDate("2028-02-29"), "29 de febrero de 2028");
   });
 });
+
+import { formatShortDate } from "./dates.js";
+
+describe("formatShortDate", () => {
+  it("shows day and short month for the chart axis", () => {
+    assert.equal(formatShortDate("2026-08-03"), "3 ago");
+    assert.equal(formatShortDate("2026-09-28"), "28 sept");
+  });
+
+  it("reads the date as a calendar day, not shifted by time zone", () => {
+    assert.equal(formatShortDate("2026-01-01"), "1 ene");
+  });
+});

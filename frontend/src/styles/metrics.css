@@ -72,6 +72,13 @@
   list-style: none;
 }
 
+/* Trend chart: Chart.js sizes the canvas from this positioned container. */
+.trend-chart {
+  position: relative;
+  height: 220px;
+  margin-bottom: 12px;
+}
+
 /* Trend table */
 .trend-table {
   width: 100%;
