@@ -6,11 +6,13 @@ import ErrorBanner from "./components/ErrorBanner.jsx";
 import HabitsPage from "./pages/HabitsPage.jsx";
 import IdeasPage from "./pages/IdeasPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import MetricsPage from "./pages/MetricsPage.jsx";
 import SetupPage from "./pages/SetupPage.jsx";
 
 const SESSION_EXPIRED = "Tu sesión expiró. Vuelve a iniciar sesión.";
 
-// Decides which screen to show: first use, sign in, or the app with its habits and ideas tabs (spec 002, plan §4).
+// Decides which screen to show: first use, sign in, or the app with its habits, ideas and metrics tabs (spec 002, plan §4).
+// Only the open tab is mounted, so leaving a tab drops its state and opening "Métricas" always loads a fresh list (spec 004, D-T8).
 export default function App() {
   const [screen, setScreen] = useState("loading");
   const [notice, setNotice] = useState(null);
@@ -83,6 +85,9 @@ export default function App() {
               <button type="button" aria-pressed={tab === "ideas"} onClick={() => setTab("ideas")}>
                 Ideas
               </button>
+              <button type="button" aria-pressed={tab === "metrics"} onClick={() => setTab("metrics")}>
+                Métricas
+              </button>
             </nav>
             <button type="button" onClick={handleLogout}>
               Salir
@@ -90,6 +95,7 @@ export default function App() {
           </header>
           {tab === "habits" && <HabitsPage />}
           {tab === "ideas" && <IdeasPage />}
+          {tab === "metrics" && <MetricsPage />}
         </>
       )}
     </main>

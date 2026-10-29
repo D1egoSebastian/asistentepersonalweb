@@ -105,6 +105,7 @@ function historyView(habit, today, expanded) {
     })),
     expanded,
     hasMore: hasMoreHistory(habit, today),
+    hasSummary: habit.frequency !== "Daily",
   };
 }
 

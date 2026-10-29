@@ -285,6 +285,11 @@ describe("toMetricsView: history", () => {
     assert.ok(cardOf(old([])).history.weeks.every((week) => week.summary === null));
   });
 
+  it("tells the grid whether to draw the weekly summary column: only for weekly habits", () => {
+    assert.equal(cardOf(old([])).history.hasSummary, false);
+    assert.equal(cardOf(weekly([], 3, "2026-09-28")).history.hasSummary, true);
+  });
+
   it("writes the weekly summary with the logs over the goal and the state of the week (CA-8.5)", () => {
     const logs = ["2026-09-28", "2026-09-29", "2026-09-30", "2026-10-05", "2026-10-06", "2026-10-12"];
     const { history } = cardOf(weekly(logs, 3, "2026-09-28"));
