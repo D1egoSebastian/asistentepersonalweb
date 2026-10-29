@@ -2,13 +2,28 @@
 // Arithmetic uses UTC, so every day is exactly 24 hours long (no daylight saving changes).
 const DAY_MS = 86_400_000;
 
+// Metrics convert the same few thousand dates about 100,000 times (spec 004, RNF-3), so each
+// conversion is computed once and remembered. The caches only grow with the distinct dates seen.
+const msByDate = new Map();
+const dateByMs = new Map();
+
 function toUtcMs(date) {
-  const [year, month, day] = date.split("-").map(Number);
-  return Date.UTC(year, month - 1, day);
+  let ms = msByDate.get(date);
+  if (ms === undefined) {
+    const [year, month, day] = date.split("-").map(Number);
+    ms = Date.UTC(year, month - 1, day);
+    msByDate.set(date, ms);
+  }
+  return ms;
 }
 
 function fromUtcMs(ms) {
-  return new Date(ms).toISOString().slice(0, 10);
+  let date = dateByMs.get(ms);
+  if (date === undefined) {
+    date = new Date(ms).toISOString().slice(0, 10);
+    dateByMs.set(ms, date);
+  }
+  return date;
 }
 
 export function addDays(date, days) {
