@@ -24,7 +24,7 @@ Crear una plataforma donde pueda:
 ### Frontend
 - **Framework:** React
 - **Build tool:** Vite
-- **Gráficos:** Chart.js o Recharts
+- **Gráficos:** Chart.js 4.5.1, versión exacta (justificada en `docs/decisions.md`, spec 004)
 - **Styling:** CSS plano, sin Tailwind (decisión D-T8 de `docs/plans/001-seguimiento-de-habitos.md`)
 
 ### Backend
@@ -77,7 +77,9 @@ Sin capa `Repositories/`: EF Core ya cumple ese rol, así que los Services usan 
 
 Las rachas, el estado y el avance semanal se calculan en el frontend, en `src/logic/`, con funciones puras que reciben `today` como parámetro (decisión D-T1 del plan de la spec 001). La lógica de cada pantalla vive en `src/hooks/`; los componentes de `src/pages/` y `src/components/` solo muestran. Las sugerencias y las opciones de filtro de etiquetas son funciones puras en `src/logic/tags.js`, y las llamadas a la API salen de `src/api/` (una función por endpoint, sobre `http.js`).
 
-La app tiene dos pestañas tras iniciar sesión: "Hábitos" e "Ideas" (la barra superior también tiene "Salir"). En ideas, la búsqueda, el filtro y el orden los hace el backend: el frontend pide la sección, espera 300 ms tras la última tecla de la búsqueda y muestra el resultado.
+La app tiene tres pestañas tras iniciar sesión: "Hábitos", "Ideas" y "Métricas" (la barra superior también tiene "Salir"). En ideas, la búsqueda, el filtro y el orden los hace el backend: el frontend pide la sección, espera 300 ms tras la última tecla de la búsqueda y muestra el resultado.
+
+Las métricas (spec 004) no tienen endpoints propios: salen de `GET /api/habits` y se calculan en el frontend con funciones puras de `src/logic/`: `completion.js` (ventanas y porcentajes), `trend.js` (tendencia de 12 semanas), `history.js` (grilla día por día), `metricsView.js` (todos los textos de la pestaña) y `trendChart.js` (configuración de Chart.js, sin importarlo). Las rachas, incluida la mejor, están en `streak.js`. Los porcentajes se redondean solo al mostrarlos, con `roundPercent`.
 
 ## Variables de entorno
 
@@ -111,10 +113,6 @@ Ninguna va en `appsettings*.json` ni en el repositorio.
 
 - `POST /api/habits/{id}/log` - Marcar hábito como cumplido para una fecha (hoy o ayer)
 - `DELETE /api/habits/{id}/log/{date}` - Desmarcar hábito para una fecha (hoy o ayer)
-
-- `GET /api/metrics/streaks` - Traer todas las rachas (pendiente de la spec de métricas)
-- `GET /api/metrics/completion` - Traer % de cumplimiento por hábito (pendiente de la spec de métricas)
-- `GET /api/dashboard` - Dashboard general con métricas (pendiente de la spec de métricas)
 
 ## Modelos de BD (Inicial)
 
@@ -153,7 +151,7 @@ La base necesita la extensión `unaccent`: la migración `AddIdeas` la crea con 
 ## Próximas Decisiones
 
 - [ ] Elegir plataforma de deployment para backend
-- [ ] Definir librería de gráficos (Chart.js vs. Recharts)
+- [x] Definir librería de gráficos: Chart.js 4.5.1 (spec 004)
 - [ ] Antes de publicar: revisar el límite de intentos de login y el token en `localStorage` (riesgos aceptados en la spec 002)
 
 ## Notas

@@ -154,16 +154,17 @@ Fuentes: [spec](../specs/004-metricas.md) · [plan](../plans/004-metricas.md) ·
 
 ## Fase 9 — Parte 4: cierre
 
-- [ ] **T39 — Medir RNF-3** · RF: RNF-3 · Plan: §6.3, D-T4, D-T10, D-T14
+- [x] **T39 — Medir RNF-3** · RF: RNF-3 · Plan: §6.3, D-T4, D-T10, D-T14
   Hecho cuando: con 50 hábitos (25 diarios y 25 semanales con meta 3) y un registro por día durante 5 años (unos 91.300), generados con `generate_series` en `asistente_test`, y con `vite build` + `vite preview`, la pestaña "Métricas" se ve en menos de 1 segundo en tres corridas (desde el clic hasta ver tarjetas y gráfico); el peor tiempo queda anotado en el plan; y el tiempo de `toMetricsView` se midió aparte con un `performance.now()` temporal que no se versiona. Si no cumple, se perfila primero el cálculo y cualquier cambio de servidor espera el visto bueno del dueño.
 
-- [ ] **T40 — Actualizar `CLAUDE.md` y `AGENTS.md`** · RF: RNF-6 · Plan: §3.1
+- [x] **T40 — Actualizar `CLAUDE.md` y `AGENTS.md`** · RF: RNF-6 · Plan: §3.1
   Hecho cuando: ambos (iguales salvo la cabecera) quitan `GET /api/metrics/streaks`, `GET /api/metrics/completion` y `GET /api/dashboard` de los endpoints, cierran "Chart.js vs. Recharts" en "Próximas decisiones" y en el stack (queda Chart.js 4.5.1), mencionan la tercera pestaña "Métricas" y los módulos nuevos de `src/logic/`, y `diff CLAUDE.md AGENTS.md` solo muestra las diferencias de nombre de agente.
 
-- [ ] **T41 — Casos límite y spec al día** · RF: RF-1 a RF-9
+- [x] **T41 — Casos límite y spec al día** · RF: RF-1 a RF-9
   Hecho cuando: cada caso límite de la sección 8 de la spec tiene su verificación (test automático si es una regla, tarea del navegador T28 a T37 si es de interfaz), y la spec refleja cualquier cambio de comportamiento hecho durante la implementación, en el mismo commit que el cambio.
+  Nota (28-10-2026): las reglas de la sección 8 tienen test (revisión de fiabilidad de la Parte 1) y los casos de interfaz se verificaron en T28 a T37. Los cambios hechos al implementar (eje X con fecha corta, altura fija del gráfico, columna "Semana" más ancha, caché de fechas) no cambian ningún comportamiento de la spec, así que la spec no cambia.
 
-- [ ] **T42 — Verificación final** · RF: todos
+- [x] **T42 — Verificación final** · RF: todos
   Hecho cuando: `dotnet test` y `npm test` pasan; cada fila de la matriz del plan (§7) tiene su verificación; `git diff --stat backend/` está vacío y no hay endpoints ni migraciones nuevas (RNF-1, RNF-6); `chart.js` es la única dependencia nueva (RNF-7); y los textos visibles están en español neutro (RNF-5).
 
 - [ ] **T43 — Recorrido del dueño** · RF: RF-1 a RF-9
