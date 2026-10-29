@@ -1,3 +1,5 @@
+import { formatDate } from "../logic/dates.js";
+
 // Shows one idea: its summary, tags and date. Opening it shows the whole text.
 // Archived ideas are read-only: they have no "Editar" (CA-5.4).
 export default function IdeaCard({ idea, archived, detail, onOpen, onClose, onEdit, onToggleArchive, onDelete }) {
@@ -40,13 +42,4 @@ export default function IdeaCard({ idea, archived, detail, onOpen, onClose, onEd
       </div>
     </article>
   );
-}
-
-// "2026-10-27" is read as a calendar day, not as UTC midnight, so it does not show the day before.
-function formatDate(isoDate) {
-  return new Date(`${isoDate}T00:00:00`).toLocaleDateString("es", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 }

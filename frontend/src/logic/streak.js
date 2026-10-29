@@ -36,8 +36,7 @@ export function weekProgress(logDates, today) {
 
 // Consecutive met weeks. The current week does not break the streak until it ends,
 // and a week before the habit existed never counts.
-export function weeklyStreak(logDates, goal, createdOn, today) {
-  const counts = countByWeek(logDates);
+export function weeklyStreakFromCounts(counts, goal, createdOn, today) {
   const first = weekStart(createdOn);
   const current = weekStart(today);
   let cursor = isWeekMet(counts, current, goal) ? current : addDays(current, -7);
@@ -47,4 +46,39 @@ export function weeklyStreak(logDates, goal, createdOn, today) {
     cursor = addDays(cursor, -7);
   }
   return streak;
+}
+
+// Same as weeklyStreakFromCounts, for callers that only have the log dates.
+export function weeklyStreak(logDates, goal, createdOn, today) {
+  return weeklyStreakFromCounts(countByWeek(logDates), goal, createdOn, today);
+}
+
+// Longest chain of dates in `keys` where each one is `step` days after the previous.
+// A chain starts at a date whose predecessor is missing, so every chain is walked once.
+function longestRun(keys, step) {
+  let best = 0;
+  for (const start of keys) {
+    if (keys.has(addDays(start, -step))) {
+      continue;
+    }
+    let length = 1;
+    for (let next = addDays(start, step); keys.has(next); next = addDays(next, step)) {
+      length += 1;
+    }
+    best = Math.max(best, length);
+  }
+  return best;
+}
+
+// Longest run of consecutive marked days in the whole history.
+// Logs are never in the future, so today counts when marked and does not break anything when not.
+export function bestDailyStreak(logDates) {
+  return longestRun(new Set(logDates), 1);
+}
+
+// Longest run of consecutive met weeks in the whole history.
+// Weeks that did not reach the goal are simply left out, so the current week never breaks a run.
+export function bestWeeklyStreak(counts, goal) {
+  const metWeeks = new Set([...counts.keys()].filter((week) => isWeekMet(counts, week, goal)));
+  return longestRun(metWeeks, 7);
 }

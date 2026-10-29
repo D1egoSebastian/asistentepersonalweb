@@ -49,3 +49,49 @@ describe("weekStart", () => {
     }
   });
 });
+
+import { daysBetween } from "./dates.js";
+
+describe("daysBetween", () => {
+  it("counts the days inside one month", () => {
+    assert.equal(daysBetween("2026-10-12", "2026-10-16"), 4);
+  });
+
+  it("crosses a month boundary", () => {
+    assert.equal(daysBetween("2026-01-30", "2026-02-02"), 3);
+  });
+
+  it("crosses a year boundary", () => {
+    assert.equal(daysBetween("2025-12-30", "2026-01-02"), 3);
+  });
+
+  it("counts February 29 in a leap year but not in a common year", () => {
+    assert.equal(daysBetween("2028-02-28", "2028-03-01"), 2);
+    assert.equal(daysBetween("2027-02-28", "2027-03-01"), 1);
+  });
+
+  it("is 0 for the same date", () => {
+    assert.equal(daysBetween("2026-10-16", "2026-10-16"), 0);
+  });
+
+  it("is negative when the second date is earlier", () => {
+    assert.equal(daysBetween("2026-10-16", "2026-10-12"), -4);
+  });
+
+  it("counts a whole year", () => {
+    assert.equal(daysBetween("2026-01-01", "2027-01-01"), 365);
+  });
+});
+
+import { formatDate } from "./dates.js";
+
+describe("formatDate", () => {
+  it("writes the day, the month name and the year in Spanish", () => {
+    assert.equal(formatDate("2026-10-27"), "27 de octubre de 2026");
+  });
+
+  it("does not pad the day and keeps the calendar day (no UTC shift)", () => {
+    assert.equal(formatDate("2026-01-01"), "1 de enero de 2026");
+    assert.equal(formatDate("2028-02-29"), "29 de febrero de 2028");
+  });
+});

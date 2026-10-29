@@ -21,3 +21,21 @@ export function weekStart(date) {
   const daysSinceMonday = (weekday + 6) % 7;
   return addDays(date, -daysSinceMonday);
 }
+
+// Days from `from` to `to`. Negative when `to` is earlier.
+export function daysBetween(from, to) {
+  return (toUtcMs(to) - toUtcMs(from)) / DAY_MS;
+}
+
+// One formatter for the whole app: creating it once is cheaper than one per call.
+const DATE_FORMAT = new Intl.DateTimeFormat("es", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+// "2026-10-27" becomes "27 de octubre de 2026". The date is read as a calendar day.
+export function formatDate(date) {
+  return DATE_FORMAT.format(toUtcMs(date));
+}
