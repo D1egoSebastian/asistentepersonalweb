@@ -147,6 +147,170 @@ public class ReminderRulesTests
         Assert.All(alerts, a => Assert.Equal("Correr", a.HabitName));
     }
 
+    // ---- WeeklyAtRisk: goal 3, the week of 2026-10-12 (Monday) to 2026-10-18 (Sunday) ----
+
+    [Fact]
+    public void WeeklyAtRisk_FridayWithNoneOfThree_AlertsWithTheNumbers()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs(), Today);
+
+        var alert = Assert.Single(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+        Assert.Equal("Gimnasio", alert.HabitName);
+        Assert.Equal((0, 3, 3), (alert.Done, alert.Goal, alert.DaysLeft));
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_MondayWithNoneOfThree_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs(), new DateOnly(2026, 10, 12));
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_FridayWithOneOfThree_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs("2026-10-13"), Today);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_SaturdayWithOneOfThree_Alerts()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs("2026-10-13"), new DateOnly(2026, 10, 17));
+
+        var alert = Assert.Single(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+        Assert.Equal((1, 3, 2), (alert.Done, alert.Goal, alert.DaysLeft));
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_SundayWithNoneOfOne_Alerts()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(1), Logs(), new DateOnly(2026, 10, 18));
+
+        var alert = Assert.Single(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+        Assert.Equal((0, 1, 1), (alert.Done, alert.Goal, alert.DaysLeft));
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_GoalMet_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(
+            Weekly(3), Logs("2026-10-12", "2026-10-13", "2026-10-14"), new DateOnly(2026, 10, 18));
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_TodayAlreadyLoggedCountsAsDone()
+    {
+        var saturday = new DateOnly(2026, 10, 17);
+
+        var withoutToday = ReminderRules.HabitAlerts(Weekly(2), Logs(), saturday);
+        var withToday = ReminderRules.HabitAlerts(Weekly(2), Logs("2026-10-17"), saturday);
+
+        Assert.Single(withoutToday, a => a.Kind == AlertKind.WeeklyAtRisk);
+        Assert.DoesNotContain(withToday, a => a.Kind == AlertKind.WeeklyAtRisk);
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_LogsOfThePreviousWeekDoNotCount()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs("2026-10-05", "2026-10-06", "2026-10-07"), Today);
+
+        var alert = Assert.Single(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+        Assert.Equal(0, alert.Done);
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_Daily_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Daily(), Logs(), Today);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+    }
+
+    // ---- LastWeekMissed: today is Monday 2026-10-19; the week before is 2026-10-12 to 2026-10-18 ----
+
+    private static readonly DateOnly NextMonday = new(2026, 10, 19);
+
+    [Fact]
+    public void LastWeekMissed_OneOfThree_AlertsWithTheNumbers()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs("2026-10-14"), NextMonday);
+
+        var alert = Assert.Single(alerts, a => a.Kind == AlertKind.LastWeekMissed);
+        Assert.Equal("Gimnasio", alert.HabitName);
+        Assert.Equal((1, 3), (alert.Done, alert.Goal));
+    }
+
+    [Fact]
+    public void LastWeekMissed_NoLogsAtAll_Alerts()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs(), NextMonday);
+
+        Assert.Equal(0, Assert.Single(alerts, a => a.Kind == AlertKind.LastWeekMissed).Done);
+    }
+
+    [Fact]
+    public void LastWeekMissed_NotAMonday_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs("2026-10-14"), new DateOnly(2026, 10, 20));
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.LastWeekMissed);
+    }
+
+    [Fact]
+    public void LastWeekMissed_GoalMetLastWeek_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(
+            Weekly(3), Logs("2026-10-12", "2026-10-14", "2026-10-18"), NextMonday);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.LastWeekMissed);
+    }
+
+    [Fact]
+    public void LastWeekMissed_OnlyLogsOfLastWeekCount()
+    {
+        var alerts = ReminderRules.HabitAlerts(
+            Weekly(2), Logs("2026-10-10", "2026-10-11", "2026-10-19"), NextMonday);
+
+        Assert.Equal(0, Assert.Single(alerts, a => a.Kind == AlertKind.LastWeekMissed).Done);
+    }
+
+    [Fact]
+    public void LastWeekMissed_CreatedThisWeek_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3, createdOn: "2026-10-19"), Logs(), NextMonday);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.LastWeekMissed);
+    }
+
+    [Fact]
+    public void LastWeekMissed_CreatedOnWednesdayOfLastWeek_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3, createdOn: "2026-10-14"), Logs(), NextMonday);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.LastWeekMissed);
+    }
+
+    [Fact]
+    public void LastWeekMissed_CreatedOnLastMonday_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3, createdOn: "2026-10-12"), Logs(), NextMonday);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.LastWeekMissed);
+    }
+
+    [Fact]
+    public void LastWeekMissed_CreatedTheSundayBeforeLastWeek_Alerts()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3, createdOn: "2026-10-11"), Logs(), NextMonday);
+
+        Assert.Single(alerts, a => a.Kind == AlertKind.LastWeekMissed);
+    }
+
     private static Habit Daily(string createdOn = "2026-08-31") => new()
     {
         Id = 1, UserId = 1, Name = "Correr", Frequency = Frequency.Daily, CreatedOn = DateOnly.Parse(createdOn),

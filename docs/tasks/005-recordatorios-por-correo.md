@@ -61,13 +61,13 @@ Chain strategy: feature-branch-chain (decidido)
 - [x] **T08 — Alerta `StreakLost` y dos alertas por hábito (test primero)** · RF: CA-3.4, CA-3.5 · Plan: §4.2, S-1
   Hecho cuando: pasan `StreakLost_*`: racha de 3 días cortada ayer → sí (con el largo de la racha, por ejemplo 5); racha de 2 → no; ayer marcado → no; semanal → no; y `TwoAlerts_SameHabit` (CA-3.1 y CA-3.4 juntas devuelven dos alertas del mismo hábito).
 
-- [ ] **T09 — Alerta `WeeklyAtRisk` (test primero)** · RF: CA-3.2 · Plan: §4.2, S-2
+- [x] **T09 — Alerta `WeeklyAtRisk` (test primero)** · RF: CA-3.2 · Plan: §4.2, S-2
   Hecho cuando: pasan `WeeklyAtRisk_*` con meta 3: lunes 0 de 3 → no (quedan 7); viernes 0 de 3 → sí (quedan 3); viernes 1 de 3 → no; domingo con 0 de 1 → sí; meta cumplida → no; hoy ya marcado cuenta como hecho; y un hábito diario → no.
 
-- [ ] **T10 — Alerta `LastWeekMissed` (test primero)** · RF: CA-3.3 · Plan: D-T9, §4.2
+- [x] **T10 — Alerta `LastWeekMissed` (test primero)** · RF: CA-3.3 · Plan: D-T9, §4.2
   Hecho cuando: pasan `LastWeekMissed_*` con hoy lunes 2026-10-19: un día que no es lunes → no; meta cumplida la semana pasada → no; hábito creado esta semana → no; **creado el miércoles de la semana pasada → no** (D-T9); creado el lunes pasado → no (`createdOn < lunes pasado`); creado antes del lunes pasado con menos registros que la meta → sí.
 
-- [ ] **T11 — Cierre de C2a** · RF: CA-3.1 a CA-3.5, D-3
+- [x] **T11 — Cierre de C2a** · RF: CA-3.1 a CA-3.5, D-3
   Hecho cuando: `dotnet test` y `npm test` pasan; cada alerta tiene su test en positivo y en su borde negativo; ninguna función supera 30 líneas; no hay cambios en `frontend/src` salvo `streakCases.test.js`; y el commit se mide antes de cerrarlo: si supera 400 líneas, T10 pasa a un commit propio.
 
 ## Fase 2 — C2b: ideas, texto, secreto y reloj puros
