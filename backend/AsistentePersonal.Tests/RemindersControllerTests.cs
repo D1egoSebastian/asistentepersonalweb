@@ -60,7 +60,11 @@ public class RemindersControllerTests : IDisposable
     [Fact]
     public void IsExplicitlyAnonymous_SoTheSecretIsTheOnlyDoor()
     {
-        Assert.NotNull(Attribute.GetCustomAttribute(typeof(RemindersController), typeof(AllowAnonymousAttribute)));
+        // On the action, not the class: a future action added to this controller must not be public by accident.
+        var daily = typeof(RemindersController).GetMethod(nameof(RemindersController.Daily))!;
+
+        Assert.NotNull(Attribute.GetCustomAttribute(daily, typeof(AllowAnonymousAttribute)));
+        Assert.Null(Attribute.GetCustomAttribute(typeof(RemindersController), typeof(AllowAnonymousAttribute)));
         Assert.Null(Attribute.GetCustomAttribute(typeof(RemindersController), typeof(AuthorizeAttribute)));
     }
 

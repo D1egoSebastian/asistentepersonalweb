@@ -10,9 +10,9 @@ namespace AsistentePersonal.Controllers;
 // It is not an [ApiController] on purpose: that attribute would turn the bare 401 into a ProblemDetails body,
 // and a rejected call must reveal nothing (CA-4.2).
 [Route("api/reminders")]
-[AllowAnonymous]
 public class RemindersController(ReminderService reminders, ReminderSecret secret, TimeProvider clock) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpPost("daily")]
     public async Task<IActionResult> Daily([FromHeader(Name = "X-Reminder-Secret")] string? received)
     {

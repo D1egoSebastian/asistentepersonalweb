@@ -246,3 +246,17 @@ Presupuesto de revisión: 400 líneas cambiadas por commit (estimaciones a mano 
 **Commits que pasan de 400 líneas sin partir:** ninguno. Sí pasaban en el plan: C1 (≈ 440 + tareas), C2 (≈ 650) y C4 (≈ 750); aquí están partidos en C1a/b/c, C2a/b y C4a-1/C4a-2/C4b.
 
 **Dependencias entre commits:** C2a → C2b → C3 → C4a-1 → C4a-2 → C4b → C5. La Fase 0 (T00 a T04) va antes de C2a y no produce commits de código; sus notas se guardan en C6.
+
+---
+
+## Correcciones tras revisión de fiabilidad
+
+Las casillas de las tareas originales no cambian. Una línea por hallazgo:
+
+- **A. Zona horaria en el servicio:** hecho. Casos con las 22:00 locales (02:00 UTC del día siguiente), 23:59 y 00:00 locales, y una idea editada cerca de la medianoche UTC. Las 02:00 y las 04:00 UTC no son el mismo día local en La Paz (22:00 del viernes y 00:00 del sábado), así que se probó cada lado de la ventana. Sin cambio de código: ya usaba `OwnerClock`; al forzar la fecha UTC, tres de los casos fallan.
+- **B. Casos compartidos de racha:** hecho. El caso 4 se renombró (probaba "racha que termina ayer", no una racha cortada); se añadió "ni hoy ni ayer marcados da 0 aunque haya logs anteriores"; `streak.js` y `ReminderRules` coinciden sin tocar ninguno; xunit reporta cada caso por separado (`[Theory]` con `MemberData`).
+- **C1. Reversión de una ejecución que ya había insertado la fila:** hecho, con la base real. La segunda ejecución espera por el bloqueo (verificado en `pg_locks`, sin pausas a ciegas), la primera falla y revierte, y la segunda envía.
+- **C2. Idea borrada entre la carga y el guardado:** hecho. Antes escapaba un error de clave foránea sin controlar (500); ahora la ejecución termina `failed` (502), sin filas guardadas, y la siguiente ejecución sigue sin esa idea. Es un cambio de código de respuesta (500 a 502) en un caso muy raro; el flujo programado termina en error en ambos.
+- **D. Días desde `UpdatedAt` y restauración:** hecho. La segunda vez que se recuerda una idea el texto muestra 54 días (40 + 14); una idea restaurada hoy no entra en el resumen hasta cumplir 14 días.
+- **E. `[AllowAnonymous]` en la acción:** hecho. Pasó de la clase a `Daily` y el test comprueba la acción.
+- **Sin tocar, por decisión del dueño:** CA-3.2 y el orden de creación de hábitos (D-T9), racha limitada a 14 días (D-T10), `Idempotency-Key` y manejo de Resend (T04), migración y reparto de C3, fase 6.
