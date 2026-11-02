@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using AsistentePersonal.Models;
 
 namespace AsistentePersonal.Services;
@@ -10,6 +12,31 @@ public static class ReminderRules
     public const int MinLostStreak = 3;
     public const int IdeaPreviewChars = 80;
     public static readonly TimeOnly DigestTime = new(8, 0);
+
+    public static bool IsDigestTime(TimeOnly localTime) => localTime >= DigestTime;
+
+    // Compares the SHA-256 of both values in constant time. Hashing first gives 32 bytes every time,
+    // so the length of the secret is not revealed either (plan D-T7).
+    public static bool IsValidSecret(string? received, string expected)
+    {
+        if (string.IsNullOrEmpty(received))
+        {
+            return false;
+        }
+
+        var receivedHash = SHA256.HashData(Encoding.UTF8.GetBytes(received));
+        var expectedHash = SHA256.HashData(Encoding.UTF8.GetBytes(expected));
+        return CryptographicOperations.FixedTimeEquals(receivedHash, expectedHash);
+    }
+
+    // An idea is due when 14 days passed since its last edit or its last reminder, whichever is later.
+    public static bool IsIdeaDue(DateOnly updatedOn, DateOnly? lastRemindedOn, DateOnly today)
+    {
+        var lastTouch = lastRemindedOn is { } reminded && reminded > updatedOn ? reminded : updatedOn;
+        return DaysSince(lastTouch, today) >= StaleIdeaDays;
+    }
+
+    public static int DaysSince(DateOnly from, DateOnly today) => today.DayNumber - from.DayNumber;
 
     // Monday of the week that contains the date. Ported from weekStart in frontend/src/logic/dates.js.
     public static DateOnly WeekStart(DateOnly date)
@@ -109,3 +136,6 @@ public enum AlertKind
 // One line of the digest about a habit. Streak is only used by StreakLost; Done, Goal and DaysLeft by the weekly alerts.
 public sealed record HabitAlert(
     AlertKind Kind, string HabitName, int Streak = 0, int Done = 0, int Goal = 0, int DaysLeft = 0);
+
+// An idea that is due for a reminder: its text and the days since its last edit or reminder.
+public sealed record StaleIdea(string Text, int Days);

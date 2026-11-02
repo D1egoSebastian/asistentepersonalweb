@@ -72,25 +72,25 @@ Chain strategy: feature-branch-chain (decidido)
 
 ## Fase 2 — C2b: ideas, texto, secreto y reloj puros
 
-- [ ] **T12 — `OwnerClock.LocalTimeAt` e `IsDigestTime` (test primero)** · RF: CA-1.1 · Plan: D-T2, §4.1
+- [x] **T12 — `OwnerClock.LocalTimeAt` e `IsDigestTime` (test primero)** · RF: CA-1.1 · Plan: D-T2, §4.1
   Hecho cuando: en `OwnerClockTests.cs` pasan los tests de la hora local con `America/La_Paz` y con `America/Santiago`, incluido el día de un cambio de horario (fecha comprobada con `TimeZoneInfo`); `OwnerClock.LocalTimeAt(utcNow, zone)` devuelve `TimeOnly`; en `ReminderRulesTests.cs` pasan `IsDigestTime_*` con 07:59 → falso, 08:00 → verdadero y 23:59 → verdadero; los tests existentes de `OwnerClock` pasan sin modificarlos.
 
-- [ ] **T13 — `IsValidSecret` (test primero)** · RF: CA-4.2 · Plan: D-T7
+- [x] **T13 — `IsValidSecret` (test primero)** · RF: CA-4.2 · Plan: D-T7
   Hecho cuando: pasan `IsValidSecret_*`: igual → verdadero; distinto → falso; de otra longitud → falso; `null` → falso; vacío → falso. La implementación usa `CryptographicOperations.FixedTimeEquals` sobre los SHA-256 de ambos valores (revisión de código, no medición de tiempos).
 
-- [ ] **T14 — `IsIdeaDue` y `DaysSince` (test primero)** · RF: CA-2.1, CA-2.2, CA-2.3, CA-2.4 · Plan: §4.1
+- [x] **T14 — `IsIdeaDue` y `DaysSince` (test primero)** · RF: CA-2.1, CA-2.2, CA-2.3, CA-2.4 · Plan: §4.1
   Hecho cuando: pasan `IdeaDue_At14Days_NotAt13`, `IdeaDue_14DaysAfterLastReminder` (recordada hace 13 → no, hace 14 → sí), `IdeaEditedAfterReminder_CountsFromEdit` y `DaysSince` con 15 y 28 días.
 
-- [ ] **T15 — `IdeaRules.Cut` y `Summary` (test primero)** · RF: CA-2.4 · Plan: D-T12
+- [x] **T15 — `IdeaRules.Cut` y `Summary` (test primero)** · RF: CA-2.4 · Plan: D-T12
   Hecho cuando: en `IdeaRulesTests.cs` pasan `Cut_*` (primera línea con texto, corte a 80 con "…", emoji y tildes sin partirse, saltos de línea iniciales ignorados, texto corto sin "…"); `Summary` llama a `Cut(text, 120)`; y **los tests existentes de `Summary` pasan sin modificarlos**.
 
-- [ ] **T16 — `ReminderText.Subject` (test primero)** · RF: CA-1.6 · Plan: §4.1
+- [x] **T16 — `ReminderText.Subject` (test primero)** · RF: CA-1.6 · Plan: §4.1
   Hecho cuando: en `ReminderTextTests.cs` pasan "Tu resumen de hoy: 2 ideas y 1 hábito", "…: 1 idea", "…: 3 hábitos" y la omisión de la parte vacía.
 
-- [ ] **T17 — `ReminderText.Body` (test primero)** · RF: CA-1.6, CA-2.4, CA-3.5 · Plan: §4.4
+- [x] **T17 — `ReminderText.Body` (test primero)** · RF: CA-1.6, CA-2.4, CA-3.5 · Plan: §4.4
   Hecho cuando: pasan `IdeaLine_*` (texto recortado a 80 y días sin editar), `OneLinePerAlert` y el cuerpo exacto con las secciones "Ideas sin editar" y "Hábitos en riesgo" (los textos de cada alerta quedan fijados en el test, en español neutro y texto plano); el tipo `StaleIdea` está en `ReminderRules.cs`.
 
-- [ ] **T18 — Cierre de C2b** · RF: CA-1.1, CA-1.6, CA-2.1 a CA-2.4, CA-4.2
+- [x] **T18 — Cierre de C2b** · RF: CA-1.1, CA-1.6, CA-2.1 a CA-2.4, CA-4.2
   Hecho cuando: `dotnet test` y `npm test` pasan; los tests existentes de `IdeaRules` y `OwnerClock` no se modificaron; ninguna función supera 30 líneas; no cambia ningún endpoint ni pantalla.
 
 ## Fase 3 — C3: datos y reinicio del reloj al restaurar (S-3)

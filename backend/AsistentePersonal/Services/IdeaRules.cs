@@ -75,7 +75,11 @@ public static class IdeaRules
     }
 
     // The first line that has text, cut to 120 visible characters with "…" when it is longer.
-    public static string Summary(string? text)
+    public static string Summary(string? text) => Cut(text, SummaryLength);
+
+    // The first line that has text, cut to maxChars visible characters with "…" when it is longer.
+    // Visible characters are text elements, so an emoji or a letter with an accent is never split.
+    public static string Cut(string? text, int maxChars)
     {
         var normalized = NormalizeText(text);
         if (normalized is null)
@@ -84,12 +88,12 @@ public static class IdeaRules
         }
 
         var firstLine = normalized.Split('\n').Select(TextRules.Normalize).First(line => line is not null)!;
-        if (TextRules.CountChars(firstLine) <= SummaryLength)
+        if (TextRules.CountChars(firstLine) <= maxChars)
         {
             return firstLine;
         }
 
-        return new StringInfo(firstLine).SubstringByTextElements(0, SummaryLength) + "…";
+        return new StringInfo(firstLine).SubstringByTextElements(0, maxChars) + "…";
     }
 
     // Words of a search, separated by one or more spaces. A blank search gives an empty list.

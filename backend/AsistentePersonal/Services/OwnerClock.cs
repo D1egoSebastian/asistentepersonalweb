@@ -11,6 +11,13 @@ public static class OwnerClock
         return DateOnly.FromDateTime(local.DateTime);
     }
 
+    // The wall-clock time in the owner's zone. The digest uses it to know whether it is already 8:00 there.
+    public static TimeOnly LocalTimeAt(DateTimeOffset utcNow, TimeZoneInfo ownerZone)
+    {
+        var local = TimeZoneInfo.ConvertTime(utcNow, ownerZone);
+        return TimeOnly.FromDateTime(local.DateTime);
+    }
+
     // Turns the configured zone id into a time zone. A missing or unknown zone fails with a clear message,
     // so Program.cs can stop the app at startup instead of failing on every habits request.
     public static TimeZoneInfo ResolveZone(string? zoneId)

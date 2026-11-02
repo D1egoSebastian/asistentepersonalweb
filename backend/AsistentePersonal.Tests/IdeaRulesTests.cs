@@ -135,6 +135,45 @@ public class IdeaRulesTests
         Assert.Equal(new string('a', 119) + "\U0001F600" + "…", IdeaRules.Summary(text));
     }
 
+    // ---- Cut: the same cut for the list (120) and the digest (80), spec 005 CA-2.4 ----
+
+    [Fact]
+    public void Cut_UsesTheFirstLineThatHasText()
+    {
+        Assert.Equal("Segunda", IdeaRules.Cut("\n  \nSegunda\nTercera", 80));
+    }
+
+    [Fact]
+    public void Cut_ShortTextHasNoEllipsis()
+    {
+        Assert.Equal("Regalo para mamá", IdeaRules.Cut("Regalo para mamá", 80));
+        Assert.Equal(new string('a', 80), IdeaRules.Cut(new string('a', 80), 80));
+    }
+
+    [Fact]
+    public void Cut_CutsAtTheLimitWithAnEllipsis()
+    {
+        Assert.Equal(new string('a', 80) + "…", IdeaRules.Cut(new string('a', 81), 80));
+        Assert.Equal("abc…", IdeaRules.Cut("abcdef", 3));
+    }
+
+    [Fact]
+    public void Cut_DoesNotSplitAnEmojiOrALetterWithAnAccent()
+    {
+        var emoji = new string('a', 79) + "\U0001F600" + "bbb";
+        var accent = new string('a', 79) + "é" + "bbb";
+
+        Assert.Equal(new string('a', 79) + "\U0001F600" + "…", IdeaRules.Cut(emoji, 80));
+        Assert.Equal(new string('a', 79) + "é" + "…", IdeaRules.Cut(accent, 80));
+    }
+
+    [Fact]
+    public void Cut_ReturnsAnEmptyTextWhenThereIsNoVisibleText()
+    {
+        Assert.Equal("", IdeaRules.Cut(null, 80));
+        Assert.Equal("", IdeaRules.Cut(" \n\t ", 80));
+    }
+
     [Fact]
     public void LikePattern_EscapesPercentUnderscoreAndBackslash()
     {

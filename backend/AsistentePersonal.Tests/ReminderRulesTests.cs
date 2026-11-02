@@ -41,6 +41,67 @@ public class ReminderRulesTests
         }
     }
 
+    // ---- Digest time, secret and stale ideas ----
+
+    [Theory]
+    [InlineData(7, 59, false)]
+    [InlineData(0, 0, false)]
+    [InlineData(8, 0, true)]
+    [InlineData(23, 59, true)]
+    public void IsDigestTime_IsTrueFromEightOnward(int hour, int minute, bool expected)
+    {
+        Assert.Equal(expected, ReminderRules.IsDigestTime(new TimeOnly(hour, minute)));
+    }
+
+    [Fact]
+    public void IsValidSecret_AcceptsTheSameValue()
+    {
+        Assert.True(ReminderRules.IsValidSecret("a-long-shared-secret-of-32-characters", "a-long-shared-secret-of-32-characters"));
+    }
+
+    [Theory]
+    [InlineData("a-long-shared-secret-of-32-characterz")]
+    [InlineData("short")]
+    [InlineData("a-long-shared-secret-of-32-characters-and-more")]
+    [InlineData(null)]
+    [InlineData("")]
+    public void IsValidSecret_RejectsAnythingElse(string? received)
+    {
+        Assert.False(ReminderRules.IsValidSecret(received, "a-long-shared-secret-of-32-characters"));
+    }
+
+    [Fact]
+    public void IdeaDue_At14Days_NotAt13()
+    {
+        Assert.True(ReminderRules.IsIdeaDue(new DateOnly(2026, 10, 2), null, Today));
+        Assert.False(ReminderRules.IsIdeaDue(new DateOnly(2026, 10, 3), null, Today));
+    }
+
+    [Fact]
+    public void IdeaDue_14DaysAfterLastReminder()
+    {
+        var editedLongAgo = new DateOnly(2026, 8, 1);
+
+        Assert.False(ReminderRules.IsIdeaDue(editedLongAgo, new DateOnly(2026, 10, 3), Today));
+        Assert.True(ReminderRules.IsIdeaDue(editedLongAgo, new DateOnly(2026, 10, 2), Today));
+    }
+
+    [Fact]
+    public void IdeaEditedAfterReminder_CountsFromEdit()
+    {
+        var remindedLongAgo = new DateOnly(2026, 9, 1);
+
+        Assert.False(ReminderRules.IsIdeaDue(new DateOnly(2026, 10, 10), remindedLongAgo, Today));
+        Assert.True(ReminderRules.IsIdeaDue(new DateOnly(2026, 10, 2), remindedLongAgo, Today));
+    }
+
+    [Fact]
+    public void DaysSince_CountsCalendarDays()
+    {
+        Assert.Equal(15, ReminderRules.DaysSince(new DateOnly(2026, 10, 1), Today));
+        Assert.Equal(28, ReminderRules.DaysSince(new DateOnly(2026, 9, 18), Today));
+    }
+
     [Fact]
     public void Constants_MatchTheSpec()
     {
