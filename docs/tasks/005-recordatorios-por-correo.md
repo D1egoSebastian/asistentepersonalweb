@@ -120,19 +120,19 @@ Se entrega en dos commits (ver "Entrega"): **C4a-1** (T23 a T25) y **C4a-2** (T2
 - [x] **T25 — Un solo resumen por día y nada que reportar (test primero)** · RF: CA-1.2, CA-1.3 · Plan: §4.3
   Hecho cuando: pasan `SecondRunSameDay_Skips` (la segunda ejecución del día devuelve `Skipped` y no envía), `NothingToReport_SkipsWithoutEmailOrDigestRow` (no se envía y **no se crea** `DailyDigestLog`) y un caso sin fila de dueño → `Skipped`. Cierra C4a-1: `dotnet test` y `npm test` pasan.
 
-- [ ] **T26 — Memoria de ideas en la base (test primero)** · RF: CA-2.2, CA-2.5, CA-2.6 · Plan: D-T3
+- [x] **T26 — Memoria de ideas en la base (test primero)** · RF: CA-2.2, CA-2.5, CA-2.6 · Plan: D-T3
   Hecho cuando: pasan `ArchivedIdea_IsNotIncluded`, `RemindedIdea_ReturnsAfter14Days` (recordada hoy no vuelve a los 13 días, sí a los 14), `Sending_KeepsUpdatedAtAndVersion` (tras enviar, `UpdatedAt` y `Version` de la idea no cambian) y el orden con la idea más antigua primero.
 
-- [ ] **T27 — Alertas de hábitos desde la base (test primero)** · RF: CA-3.1 a CA-3.6 · Plan: D-T10
+- [x] **T27 — Alertas de hábitos desde la base (test primero)** · RF: CA-3.1 a CA-3.6 · Plan: D-T10
   Hecho cuando: pasan `HabitAlert_ArrivesInDigest` (un diario con ayer sin registro entra), `DeletedHabit_IsNotIncluded` (CA-3.6) y `OnlyLast14DaysOfLogs_GiveSameAlertsAsFullHistory` (la consulta carga solo registros desde `today − 14` y el resultado es igual al del historial completo); los `items` cuentan ideas más hábitos distintos.
 
-- [ ] **T28 — El envío falla y no deja rastro (test primero)** · RF: CA-1.4 · Plan: D-T5
+- [x] **T28 — El envío falla y no deja rastro (test primero)** · RF: CA-1.4 · Plan: D-T5
   Hecho cuando: pasa `SendFails_LeavesNoRows_AndNextRunSends`: con `FakeEmailSender` devolviendo `false` el resultado es `Failed`, no queda ninguna fila en `DailyDigestLogs` ni en `ReminderLogs`, y la ejecución siguiente del mismo día envía.
 
-- [ ] **T29 — Ejecución simultánea (test primero)** · RF: CA-1.3, RNF-3 · Plan: D-T5
+- [x] **T29 — Ejecución simultánea (test primero)** · RF: CA-1.3, RNF-3 · Plan: D-T5
   Hecho cuando: pasa `ConcurrentRun_UniqueViolation_Skips`: con `BeforeSaveInterceptor` (ya existe en el proyecto de tests) que inserta `DailyDigestLog` del mismo día antes del guardado, el resultado es `Skipped` y no se envía correo.
 
-- [ ] **T30 — REFACTOR y cierre de C4a** · RF: RF-1, RNF-9 · Plan: §4.3
+- [x] **T30 — REFACTOR y cierre de C4a** · RF: RF-1, RNF-9 · Plan: §4.3
   Hecho cuando: `ReminderService` se parte en `LoadStaleIdeasAsync`, `LoadHabitAlertsAsync` y `ReserveAndSendAsync`, cada uno de 30 líneas o menos; ningún test cambia; `dotnet test` y `npm test` pasan; y ningún endpoint ni migración nueva (el servicio aún no se expone).
 
 ## Fase 5 — C4b: Resend, endpoint, configuración y enmiendas documentales
