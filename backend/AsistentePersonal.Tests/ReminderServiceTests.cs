@@ -346,7 +346,225 @@ public class ReminderServiceTests
         Assert.Equal(0, await check.ReminderLogs.CountAsync());
     }
 
+    // ---- CA-1.4, RNF-3: a run that rolls back frees the day for the run that was waiting ----
+
+    [Fact]
+    public async Task ConcurrentRun_FirstSendFails_SecondRunWaitsThenSends()
+    {
+        await using (var seed = await TestDatabase.CreateEmptyContextAsync())
+        {
+            await AddOwnerAsync(seed);
+            await AddIdeaAsync(seed, "Idea estancada", At8.AddDays(-20));
+        }
+
+        await using var first = await TestDatabase.OpenAsync();
+        await using var second = await TestDatabase.OpenAsync();
+        var secondSender = new FakeEmailSender();
+        Task<ReminderOutcome>? secondRun = null;
+        var secondWasWaiting = false;
+
+        // While the first run holds the day's row inside its open transaction, the second run starts and has to
+        // wait for it. Then the first send fails, its transaction rolls back and the row disappears.
+        var firstSender = new CallbackEmailSender(async () =>
+        {
+            secondRun = new ReminderService(second, secondSender).SendDailyAsync(At8, Zone);
+            await WaitUntilALockIsWaitingAsync();
+            secondWasWaiting = !secondRun.IsCompleted;
+            return false;
+        });
+
+        var firstOutcome = await new ReminderService(first, firstSender).SendDailyAsync(At8, Zone);
+        var secondOutcome = await secondRun!.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.True(secondWasWaiting);
+        Assert.Equal(new ReminderOutcome(ReminderResult.Failed, 1), firstOutcome);
+        Assert.Equal(new ReminderOutcome(ReminderResult.Sent, 1), secondOutcome);
+        Assert.Single(secondSender.Messages);
+        await using var check = await TestDatabase.OpenAsync();
+        Assert.Equal(1, await check.DailyDigestLogs.CountAsync());
+        Assert.Equal(1, await check.ReminderLogs.CountAsync());
+    }
+
+    // An idea deleted between loading it and saving its reminder breaks the foreign key. The run ends as
+    // "failed" (502) with nothing stored, and the next run goes on without that idea.
+    [Fact]
+    public async Task IdeaDeletedBeforeSave_FailsWithoutRows_AndNextRunSends()
+    {
+        int ideaId;
+        await using (var seed = await TestDatabase.CreateEmptyContextAsync())
+        {
+            await AddOwnerAsync(seed);
+            ideaId = (await AddIdeaAsync(seed, "Idea que se borra", At8.AddDays(-20))).Id;
+            await AddIdeaAsync(seed, "Idea que queda", At8.AddDays(-30));
+        }
+
+        await using var db = await TestDatabase.OpenAsync(new BeforeSaveInterceptor(async () =>
+        {
+            await using var otherRequest = await TestDatabase.OpenAsync();
+            await otherRequest.Ideas.Where(i => i.Id == ideaId).ExecuteDeleteAsync();
+        }));
+        var sender = new FakeEmailSender();
+        var service = new ReminderService(db, sender);
+
+        var failed = await service.SendDailyAsync(At8, Zone);
+
+        Assert.Equal(ReminderResult.Failed, failed.Result);
+        Assert.Empty(sender.Messages);
+        await using (var check = await TestDatabase.OpenAsync())
+        {
+            Assert.Equal(0, await check.DailyDigestLogs.CountAsync());
+            Assert.Equal(0, await check.ReminderLogs.CountAsync());
+        }
+
+        var retry = await service.SendDailyAsync(At8.AddHours(1), Zone);
+
+        Assert.Equal(new ReminderOutcome(ReminderResult.Sent, 1), retry);
+        Assert.Equal("Ideas sin editar\n- \"Idea que queda\" (30 días)", Assert.Single(sender.Messages).Text);
+    }
+
+    // ---- D-1, RNF-4: "today" is the owner's calendar day, not the UTC date ----
+    // In La Paz (UTC-4) the digest window is 12:00 UTC to 03:59 UTC of the next day. 02:00 UTC on 2026-10-17
+    // is 22:00 on Friday 2026-10-16: the UTC date is already Saturday, the owner's day is still Friday.
+
+    private static readonly DateTimeOffset FridayEvening = new(2026, 10, 17, 2, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public async Task LocalEvening_StillCountsAsTheOwnersDay()
+    {
+        await using var db = await TestDatabase.CreateEmptyContextAsync();
+        await AddOwnerAsync(db);
+        await AddIdeaAsync(db, "Idea estancada", At8.AddDays(-20));
+        var sender = new FakeEmailSender();
+
+        var outcome = await new ReminderService(db, sender).SendDailyAsync(FridayEvening, Zone);
+
+        Assert.Equal(new ReminderOutcome(ReminderResult.Sent, 1), outcome);
+        var message = Assert.Single(sender.Messages);
+        Assert.Equal("digest-2026-10-16", message.IdempotencyKey);
+        Assert.Equal("Ideas sin editar\n- \"Idea estancada\" (20 días)", message.Text);
+        Assert.Equal(Today, (await db.DailyDigestLogs.SingleAsync()).ForDate);
+        Assert.Equal(Today, (await db.ReminderLogs.SingleAsync()).SentOn);
+    }
+
+    [Fact]
+    public async Task LocalEvening_AfterTheMorningDigest_Skips()
+    {
+        await using var db = await TestDatabase.CreateEmptyContextAsync();
+        await AddOwnerAsync(db);
+        await AddDailyHabitAsync(db, "Correr");
+        var sender = new FakeEmailSender();
+        var service = new ReminderService(db, sender);
+        await service.SendDailyAsync(At8, Zone);
+
+        // The UTC date changed, the owner's day did not: the habit alert is still there, but it was already sent.
+        var evening = await service.SendDailyAsync(FridayEvening, Zone);
+
+        Assert.Equal(new ReminderOutcome(ReminderResult.Skipped, 0), evening);
+        Assert.Single(sender.Messages);
+        Assert.Equal(1, await db.DailyDigestLogs.CountAsync());
+    }
+
+    [Theory]
+    [InlineData(3, 59, ReminderResult.Sent)] // 23:59 on the owner's Friday
+    [InlineData(4, 0, ReminderResult.Skipped)] // 00:00 on the owner's Saturday: before 8:00
+    public async Task LocalMidnight_ClosesTheDigestWindow(int utcHour, int utcMinute, ReminderResult expected)
+    {
+        await using var db = await TestDatabase.CreateEmptyContextAsync();
+        await AddOwnerAsync(db);
+        await AddIdeaAsync(db, "Idea estancada", At8.AddDays(-20));
+        var utcNow = new DateTimeOffset(2026, 10, 17, utcHour, utcMinute, 0, TimeSpan.Zero);
+
+        var outcome = await new ReminderService(db, new FakeEmailSender()).SendDailyAsync(utcNow, Zone);
+
+        Assert.Equal(expected, outcome.Result);
+    }
+
+    [Theory]
+    [InlineData(2, ReminderResult.Sent, "(14 días)")] // 22:00 on 2026-10-02 locally: 14 days before Friday 16th
+    [InlineData(4, ReminderResult.Skipped, "")] // 00:00 on 2026-10-03 locally: only 13 days
+    public async Task IdeaEditedAroundUtcMidnight_CountsTheOwnersDay(int editedAtUtcHour, ReminderResult expected, string days)
+    {
+        await using var db = await TestDatabase.CreateEmptyContextAsync();
+        await AddOwnerAsync(db);
+        await AddIdeaAsync(db, "Idea de la noche", new DateTimeOffset(2026, 10, 3, editedAtUtcHour, 0, 0, TimeSpan.Zero));
+        var sender = new FakeEmailSender();
+
+        var outcome = await new ReminderService(db, sender).SendDailyAsync(At8, Zone);
+
+        Assert.Equal(expected, outcome.Result);
+        if (expected == ReminderResult.Sent)
+        {
+            Assert.Equal($"Ideas sin editar\n- \"Idea de la noche\" {days}", Assert.Single(sender.Messages).Text);
+        }
+    }
+
+    // ---- CA-2.2, CA-2.5: the second reminder counts from the last edit, not from the last reminder ----
+
+    [Fact]
+    public async Task RemindedTwice_DaysCountFromTheLastEdit()
+    {
+        await using var db = await TestDatabase.CreateEmptyContextAsync();
+        await AddOwnerAsync(db);
+        await AddIdeaAsync(db, "Idea olvidada", At8.AddDays(-40));
+        var sender = new FakeEmailSender();
+        var service = new ReminderService(db, sender);
+
+        await service.SendDailyAsync(At8, Zone);
+        await service.SendDailyAsync(At8.AddDays(14), Zone);
+
+        Assert.Equal(
+            ["Ideas sin editar\n- \"Idea olvidada\" (40 días)", "Ideas sin editar\n- \"Idea olvidada\" (54 días)"],
+            sender.Messages.Select(m => m.Text));
+    }
+
+    [Fact]
+    public async Task IdeaRestoredToday_IsNotIncluded_UntilItIsStaleAgain()
+    {
+        await using var db = await TestDatabase.CreateEmptyContextAsync();
+        await AddOwnerAsync(db);
+        var idea = await AddIdeaAsync(db, "Idea restaurada", At8.AddDays(-30), archivedAt: At8.AddDays(-20));
+        await new IdeaService(db).RestoreAsync(User.OwnerId, idea.Id, At8);
+        var sender = new FakeEmailSender();
+        var service = new ReminderService(db, sender);
+
+        var today = await service.SendDailyAsync(At8, Zone);
+        var after13Days = await service.SendDailyAsync(At8.AddDays(13), Zone);
+        var after14Days = await service.SendDailyAsync(At8.AddDays(14), Zone);
+
+        Assert.Equal(ReminderResult.Skipped, today.Result);
+        Assert.Equal(ReminderResult.Skipped, after13Days.Result);
+        Assert.Equal(ReminderResult.Sent, after14Days.Result);
+        Assert.Equal("Ideas sin editar\n- \"Idea restaurada\" (14 días)", Assert.Single(sender.Messages).Text);
+    }
+
     // ---- Helpers ----
+
+    // An email sender whose answer comes from a test action, so a test can act while a run is sending.
+    private sealed class CallbackEmailSender(Func<Task<bool>> onSend) : IEmailSender
+    {
+        public Task<bool> SendAsync(EmailMessage message, CancellationToken cancellationToken) => onSend();
+    }
+
+    // True evidence that another run is stuck behind a row lock, instead of guessing with a sleep.
+    private static async Task WaitUntilALockIsWaitingAsync()
+    {
+        await using var probe = await TestDatabase.OpenAsync();
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (DateTime.UtcNow < deadline)
+        {
+            var waiting = await probe.Database
+                .SqlQueryRaw<int>("SELECT COUNT(*)::int AS \"Value\" FROM pg_locks WHERE NOT granted")
+                .SingleAsync();
+            if (waiting > 0)
+            {
+                return;
+            }
+
+            await Task.Delay(25);
+        }
+
+        throw new TimeoutException("The second run never waited for the first one.");
+    }
 
     private static async Task AddOwnerAsync(AppDbContext db)
     {

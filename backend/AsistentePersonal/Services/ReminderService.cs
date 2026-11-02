@@ -92,12 +92,13 @@ public class ReminderService(AppDbContext db, IEmailSender email)
         await using var transaction = await db.Database.BeginTransactionAsync();
         db.DailyDigestLogs.Add(new DailyDigestLog { ForDate = today, SentAt = utcNow });
         db.ReminderLogs.AddRange(ideas.Select(i => new ReminderLog { IdeaId = i.Id, SentOn = today }));
-        if (!await TrySaveAsync())
+        var items = ideas.Count + habitCount;
+        var rejected = await TrySaveAsync(items);
+        if (rejected is not null)
         {
-            return Skipped;
+            return rejected;
         }
 
-        var items = ideas.Count + habitCount;
         var message = BuildMessage(owner, today, ideas.Select(i => i.Idea).ToList(), alerts, habitCount);
         if (!await email.SendAsync(message, CancellationToken.None))
         {
@@ -118,18 +119,25 @@ public class ReminderService(AppDbContext db, IEmailSender email)
             ReminderText.Body(ideas, alerts),
             $"digest-{today:yyyy-MM-dd}");
 
-    // False when another run already saved the digest of this day: the unique key rejected ours (RNF-3).
-    private async Task<bool> TrySaveAsync()
+    // Null when the rows were saved. Skipped when another run already saved the digest of this day: the unique key
+    // rejected ours (RNF-3). Failed when an idea was deleted after we loaded it: nothing is stored and the next run
+    // goes on without it.
+    private async Task<ReminderOutcome?> TrySaveAsync(int items)
     {
         try
         {
             await db.SaveChangesAsync();
-            return true;
+            return null;
         }
         catch (DbUpdateException ex) when (DatabaseErrors.IsUniqueViolation(ex))
         {
             db.ChangeTracker.Clear();
-            return false;
+            return Skipped;
+        }
+        catch (DbUpdateException ex) when (DatabaseErrors.IsForeignKeyViolation(ex))
+        {
+            db.ChangeTracker.Clear();
+            return new ReminderOutcome(ReminderResult.Failed, items);
         }
     }
 }

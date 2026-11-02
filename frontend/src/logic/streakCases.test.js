@@ -10,7 +10,7 @@ const cases = JSON.parse(readFileSync(CASES_URL, "utf8"));
 
 describe("shared dailyStreak cases", () => {
   it("has cases to run", () => {
-    assert.ok(cases.dailyStreakCases.length >= 7);
+    assert.ok(cases.dailyStreakCases.length >= 8);
   });
 
   for (const { name, today, logDates, dailyStreak: expected } of cases.dailyStreakCases) {

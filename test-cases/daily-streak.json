@@ -19,10 +19,16 @@
       "dailyStreak": 2
     },
     {
-      "name": "streak cut yesterday is counted from the day before yesterday",
+      "name": "today not marked counts a longer streak that ends yesterday",
       "today": "2026-10-15",
       "logDates": ["2026-10-14", "2026-10-13", "2026-10-12", "2026-10-11", "2026-10-10"],
       "dailyStreak": 5
+    },
+    {
+      "name": "neither today nor yesterday marked gives 0 even with earlier logs",
+      "today": "2026-10-16",
+      "logDates": ["2026-10-14", "2026-10-13", "2026-10-12", "2026-10-11", "2026-10-10"],
+      "dailyStreak": 0
     },
     {
       "name": "a gap in the middle stops the streak",

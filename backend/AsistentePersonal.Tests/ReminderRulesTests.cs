@@ -8,37 +8,57 @@ public class ReminderRulesTests
 {
     // ---- Shared cases (spec 005, D-3): the same JSON file is read by the frontend tests ----
 
-    [Fact]
-    public void SharedCases_DailyStreak()
+    // Each case is reported on its own, so one failure never hides the others.
+    public static TheoryData<string, string, string[], int> DailyStreakCases()
     {
-        var cases = LoadCases("dailyStreakCases");
-
-        Assert.True(cases.Count >= 7);
-        foreach (var testCase in cases)
+        var data = new TheoryData<string, string, string[], int>();
+        foreach (var testCase in LoadCases("dailyStreakCases"))
         {
-            var logs = testCase.GetProperty("logDates").EnumerateArray().Select(d => DateOnly.Parse(d.GetString()!)).ToHashSet();
-            var today = DateOnly.Parse(testCase.GetProperty("today").GetString()!);
-
-            Assert.True(
-                testCase.GetProperty("dailyStreak").GetInt32() == ReminderRules.DailyStreak(logs, today),
-                testCase.GetProperty("name").GetString());
+            data.Add(
+                testCase.GetProperty("name").GetString()!,
+                testCase.GetProperty("today").GetString()!,
+                testCase.GetProperty("logDates").EnumerateArray().Select(d => d.GetString()!).ToArray(),
+                testCase.GetProperty("dailyStreak").GetInt32());
         }
+
+        return data;
+    }
+
+    public static TheoryData<string, string, string> WeekStartCases()
+    {
+        var data = new TheoryData<string, string, string>();
+        foreach (var testCase in LoadCases("weekStartCases"))
+        {
+            data.Add(
+                testCase.GetProperty("name").GetString()!,
+                testCase.GetProperty("date").GetString()!,
+                testCase.GetProperty("weekStart").GetString()!);
+        }
+
+        return data;
     }
 
     [Fact]
-    public void SharedCases_WeekStart()
+    public void SharedCases_AreAllLoaded()
     {
-        var cases = LoadCases("weekStartCases");
+        Assert.True(LoadCases("dailyStreakCases").Count >= 8);
+        Assert.True(LoadCases("weekStartCases").Count >= 5);
+    }
 
-        Assert.True(cases.Count >= 5);
-        foreach (var testCase in cases)
-        {
-            var date = DateOnly.Parse(testCase.GetProperty("date").GetString()!);
+    [Theory]
+    [MemberData(nameof(DailyStreakCases))]
+    public void SharedCases_DailyStreak(string name, string today, string[] logDates, int expected)
+    {
+        var logs = logDates.Select(DateOnly.Parse).ToHashSet();
 
-            Assert.True(
-                DateOnly.Parse(testCase.GetProperty("weekStart").GetString()!) == ReminderRules.WeekStart(date),
-                testCase.GetProperty("name").GetString());
-        }
+        Assert.True(expected == ReminderRules.DailyStreak(logs, DateOnly.Parse(today)), name);
+    }
+
+    [Theory]
+    [MemberData(nameof(WeekStartCases))]
+    public void SharedCases_WeekStart(string name, string date, string expected)
+    {
+        Assert.True(DateOnly.Parse(expected) == ReminderRules.WeekStart(DateOnly.Parse(date)), name);
     }
 
     // ---- Digest time, secret and stale ideas ----
