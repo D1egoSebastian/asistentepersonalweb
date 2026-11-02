@@ -95,16 +95,16 @@ Chain strategy: feature-branch-chain (decidido)
 
 ## Fase 3 — C3: datos y reinicio del reloj al restaurar (S-3)
 
-- [ ] **T19 — `RestoreAsync` reinicia `UpdatedAt` (test primero)** · RF: S-3 · Plan: D-T13
+- [x] **T19 — `RestoreAsync` reinicia `UpdatedAt` (test primero)** · RF: S-3 · Plan: D-T13
   Hecho cuando: en `IdeaServiceTests.cs` el test `Restore_KeepsTheTextTagsAndDates` se renombra a `Restore_KeepsTextTagsAndCreatedAt_AndResetsUpdatedAt`, falla y luego pasa; `IdeaService.RestoreAsync(userId, id, now)` pone `UpdatedAt = now` sin cambiar `CreatedAt` ni el orden de la lista; `IdeasController` pasa `now`; el resto de los tests de restaurar pasa. **En el mismo commit** (principio 2), `docs/specs/003-anotador-de-ideas.md` CA-6.3 queda: restaurar conserva texto, etiquetas y `CreatedAt`, y reinicia `UpdatedAt`.
 
-- [ ] **T20 — Modelos y restricciones (test primero)** · RF: RNF-3, CA-2.2 · Plan: D-T3, D-T4, §3
+- [x] **T20 — Modelos y restricciones (test primero)** · RF: RNF-3, CA-2.2 · Plan: D-T3, D-T4, §3
   Hecho cuando: `ReminderModelTests.cs` (no figura en la tabla del plan §10; se agrega porque RNF-3 y D-T4 dependen de estas restricciones) falla primero por compilación y luego se escribe lo mínimo para que compile: `Models/DailyDigestLog.cs` (`ForDate` clave primaria no generada, `SentAt`), `Models/ReminderLog.cs` (`Id`, `IdeaId`, `SentOn`), su configuración en `Data/AppDbContext.cs` (FK a `Ideas` con cascada, índice único `(IdeaId, SentOn)`) y el borrado de `ReminderLogs` y `DailyDigestLogs` en `TestDatabase.CreateEmptyContextAsync`. Los tests cubren: segundo `DailyDigestLog` con la misma fecha falla, segundo `ReminderLog` con el mismo `(IdeaId, SentOn)` falla, y borrar la idea borra sus `ReminderLog`. Siguen en rojo hasta T21.
 
-- [ ] **T21 — Migración `AddReminders`** · RF: RNF-3 · Plan: §3
+- [x] **T21 — Migración `AddReminders`** · RF: RNF-3 · Plan: §3
   Hecho cuando: `dotnet ef migrations add AddReminders` genera la migración y se revisa que solo crea `DailyDigestLogs` y `ReminderLogs` (sin tocar `Ideas`, `Habits` ni `Users`); se aplica a `asistente_dev`; los tests de T20 pasan; y `dotnet test` completo pasa.
 
-- [ ] **T22 — Cierre de C3** · RF: RNF-3, S-3
+- [x] **T22 — Cierre de C3** · RF: RNF-3, S-3
   Hecho cuando: `dotnet test` y `npm test` pasan; `git diff` muestra la spec 003 cambiada en el mismo commit que `RestoreAsync`; la migración generada va marcada para revisarse aparte; y la lista de ideas se ve igual en el navegador (el frontend no muestra `UpdatedAt`).
 
 ## Fase 4 — C4a: servicio con remitente falso

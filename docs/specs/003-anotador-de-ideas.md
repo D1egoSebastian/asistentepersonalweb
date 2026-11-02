@@ -95,7 +95,7 @@ Notación EARS: *ubicuo* ("El sistema deberá…"), *evento* ("Cuando…"), *est
 
 - **CA-6.1:** Cuando el dueño archive una idea, el sistema deberá sacarla de la lista principal, de su búsqueda y de su filtro, sin pedir confirmación (la acción se puede deshacer).
 - **CA-6.2:** El sistema deberá mostrar las ideas archivadas en una sección aparte, con la misma búsqueda y el mismo filtro por etiqueta.
-- **CA-6.3:** Cuando el dueño restaure una idea archivada, el sistema deberá devolverla a la lista principal con su texto, sus etiquetas y sus fechas originales.
+- **CA-6.3:** Cuando el dueño restaure una idea archivada, el sistema deberá devolverla a la lista principal con su texto, sus etiquetas y su fecha de creación originales, y deberá reiniciar su fecha de última edición (`UpdatedAt`) al momento de restaurar, para que el recordatorio de ideas sin editar (spec 005, S-3) cuente desde ahí. El orden de la lista no cambia, porque se ordena por fecha de creación.
 - **CA-6.4:** Mientras una idea esté archivada, el sistema deberá conservar sus etiquetas, y esas etiquetas deberán seguir sugiriéndose (CA-2.9).
 
 ### RF-7 — Eliminar una idea (HU-8)

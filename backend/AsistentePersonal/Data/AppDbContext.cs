@@ -9,10 +9,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<HabitLog> HabitLogs => Set<HabitLog>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Idea> Ideas => Set<Idea>();
+    public DbSet<DailyDigestLog> DailyDigestLogs => Set<DailyDigestLog>();
+    public DbSet<ReminderLog> ReminderLogs => Set<ReminderLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureIdea(modelBuilder);
+        ConfigureReminders(modelBuilder);
 
         // The owner is always inserted with Id = 1: the database must not generate it (spec 002, CA-1.7).
         modelBuilder.Entity<User>()
@@ -33,6 +36,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Habit>()
             .WithMany()
             .HasForeignKey(l => l.HabitId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private static void ConfigureReminders(ModelBuilder modelBuilder)
+    {
+        // The date is the key: one digest per day, and the database enforces it (spec 005, RNF-3).
+        modelBuilder.Entity<DailyDigestLog>()
+            .HasKey(d => d.ForDate);
+
+        modelBuilder.Entity<DailyDigestLog>()
+            .Property(d => d.ForDate)
+            .ValueGeneratedNever();
+
+        // One reminder per idea per day, and deleting an idea deletes its reminders.
+        modelBuilder.Entity<ReminderLog>()
+            .HasIndex(r => new { r.IdeaId, r.SentOn })
+            .IsUnique();
+
+        modelBuilder.Entity<ReminderLog>()
+            .HasOne<Idea>()
+            .WithMany()
+            .HasForeignKey(r => r.IdeaId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 

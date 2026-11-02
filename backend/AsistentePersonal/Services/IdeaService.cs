@@ -142,8 +142,9 @@ public class IdeaService(AppDbContext db)
         return await SaveAsync(userId, id, ChangedElsewhereMessage);
     }
 
-    // Puts the idea back in the active list. Its text, tags and dates stay as they were.
-    public async Task<ServiceResult> RestoreAsync(int userId, int id)
+    // Puts the idea back in the active list. Its text, tags and creation date stay as they were.
+    // UpdatedAt is reset to now: the 14-day reminder clock starts again (spec 003 CA-6.3, spec 005 S-3).
+    public async Task<ServiceResult> RestoreAsync(int userId, int id, DateTimeOffset now)
     {
         var idea = await FindOwnedAsync(userId, id);
         if (idea is null)
@@ -157,6 +158,7 @@ public class IdeaService(AppDbContext db)
         }
 
         idea.ArchivedAt = null;
+        idea.UpdatedAt = now;
         return await SaveAsync(userId, id, ChangedElsewhereMessage);
     }
 

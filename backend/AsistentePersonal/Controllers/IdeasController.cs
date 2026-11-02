@@ -99,7 +99,7 @@ public class IdeasController(IdeaService ideas) : ControllerBase
             return Unauthorized();
         }
 
-        return ToActionResult(await ideas.RestoreAsync(ownerId, id));
+        return ToActionResult(await ideas.RestoreAsync(ownerId, id, DateTimeOffset.UtcNow));
     }
 
     [HttpDelete("{id:int}")]

@@ -103,7 +103,7 @@ public class IdeaServiceTests
         var version = (await service.GetAsync(UserId, older.Id)).Value!.Version;
         await service.UpdateAsync(UserId, older.Id, "Vieja editada", null, version, Now.AddDays(1));
         await service.ArchiveAsync(UserId, older.Id, Now.AddDays(1));
-        await service.RestoreAsync(UserId, older.Id);
+        await service.RestoreAsync(UserId, older.Id, Now.AddDays(2));
 
         var list = await service.ListAsync(UserId, archived: false, search: null, tag: null, OwnerZone);
 
@@ -435,7 +435,7 @@ public class IdeaServiceTests
     }
 
     [Fact]
-    public async Task Restore_KeepsTheTextTagsAndDates()
+    public async Task Restore_KeepsTextTagsAndCreatedAt_AndResetsUpdatedAt()
     {
         await SeedOwnersAsync();
         await using var db = await TestDatabase.OpenAsync();
@@ -443,7 +443,7 @@ public class IdeaServiceTests
         var idea = await AddAsync(service, UserId, "Conservar", Now, "app", "salud");
         await service.ArchiveAsync(UserId, idea.Id, Now.AddDays(1));
 
-        var result = await service.RestoreAsync(UserId, idea.Id);
+        var result = await service.RestoreAsync(UserId, idea.Id, Now.AddDays(2));
 
         Assert.Equal(ResultStatus.Ok, result.Status);
         var restored = await db.Ideas.SingleAsync();
@@ -451,7 +451,21 @@ public class IdeaServiceTests
         Assert.Equal("Conservar", restored.Text);
         Assert.Equal(new[] { "app", "salud" }, restored.Tags);
         Assert.Equal(Now, restored.CreatedAt);
-        Assert.Equal(Now, restored.UpdatedAt);
+        Assert.Equal(Now.AddDays(2), restored.UpdatedAt);
+    }
+
+    [Fact]
+    public async Task Restore_OfAnActiveIdea_DoesNotTouchUpdatedAt()
+    {
+        await SeedOwnersAsync();
+        await using var db = await TestDatabase.OpenAsync();
+        var service = new IdeaService(db);
+        var idea = await AddAsync(service, UserId, "Activa", Now);
+
+        var result = await service.RestoreAsync(UserId, idea.Id, Now.AddDays(2));
+
+        Assert.Equal(ResultStatus.Ok, result.Status);
+        Assert.Equal(Now, (await db.Ideas.SingleAsync()).UpdatedAt);
     }
 
     [Fact]
@@ -465,7 +479,7 @@ public class IdeaServiceTests
 
         await service.ArchiveAsync(UserId, idea.Id, Now.AddDays(1));
         var archivedVersion = (await service.GetAsync(UserId, idea.Id)).Value!.Version;
-        await service.RestoreAsync(UserId, idea.Id);
+        await service.RestoreAsync(UserId, idea.Id, Now.AddDays(2));
         var restoredVersion = (await service.GetAsync(UserId, idea.Id)).Value!.Version;
 
         Assert.NotEqual(first, archivedVersion);
@@ -496,7 +510,7 @@ public class IdeaServiceTests
 
         Assert.Equal(ResultStatus.NotFound, (await service.GetAsync(UserId, missingId)).Status);
         Assert.Equal(ResultStatus.NotFound, (await service.ArchiveAsync(UserId, missingId, Now)).Status);
-        Assert.Equal(ResultStatus.NotFound, (await service.RestoreAsync(UserId, missingId)).Status);
+        Assert.Equal(ResultStatus.NotFound, (await service.RestoreAsync(UserId, missingId, Now)).Status);
         Assert.Equal(ResultStatus.NotFound, (await service.DeleteAsync(UserId, missingId)).Status);
         Assert.Equal(ResultStatus.NotFound, (await service.UpdateAsync(UserId, missingId, "x", null, 0, Now)).Status);
     }

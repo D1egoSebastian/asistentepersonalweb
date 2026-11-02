@@ -35,6 +35,8 @@ public static class TestDatabase
     public static async Task<AppDbContext> CreateEmptyContextAsync()
     {
         var context = await OpenAsync();
+        await context.ReminderLogs.ExecuteDeleteAsync();
+        await context.DailyDigestLogs.ExecuteDeleteAsync();
         await context.Ideas.ExecuteDeleteAsync();
         await context.HabitLogs.ExecuteDeleteAsync();
         await context.Habits.ExecuteDeleteAsync();

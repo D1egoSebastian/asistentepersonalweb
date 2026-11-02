@@ -23,6 +23,19 @@ namespace AsistentePersonal.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AsistentePersonal.Models.DailyDigestLog", b =>
+                {
+                    b.Property<DateOnly>("ForDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ForDate");
+
+                    b.ToTable("DailyDigestLogs");
+                });
+
             modelBuilder.Entity("AsistentePersonal.Models.Habit", b =>
                 {
                     b.Property<int>("Id")
@@ -119,6 +132,28 @@ namespace AsistentePersonal.Data.Migrations
                     b.ToTable("Ideas");
                 });
 
+            modelBuilder.Entity("AsistentePersonal.Models.ReminderLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("IdeaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("SentOn")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdeaId", "SentOn")
+                        .IsUnique();
+
+                    b.ToTable("ReminderLogs");
+                });
+
             modelBuilder.Entity("AsistentePersonal.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -154,6 +189,15 @@ namespace AsistentePersonal.Data.Migrations
                     b.HasOne("AsistentePersonal.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AsistentePersonal.Models.ReminderLog", b =>
+                {
+                    b.HasOne("AsistentePersonal.Models.Idea", null)
+                        .WithMany()
+                        .HasForeignKey("IdeaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
