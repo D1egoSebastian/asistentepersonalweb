@@ -55,6 +55,8 @@ Notación EARS: *ubicuo* ("El sistema deberá…"), *evento* ("Cuando…"), *est
 - **CA-3.2:** Si la petición no trae sesión o la sesión venció, entonces el sistema deberá responder 401 y no deberá cambiar ningún dato.
 - **CA-3.3:** Cuando la interfaz reciba un 401, deberá mostrar "Tu sesión expiró. Vuelve a iniciar sesión." y volver a la pantalla de inicio de sesión.
 
+**Excepción (spec 005, S-4):** `POST /api/reminders/daily` no usa la sesión del dueño, porque lo llama un flujo programado que no tiene cuenta. Lo protege un secreto compartido en la cabecera `X-Reminder-Secret`, y sin él responde 401. Ver [spec 005](005-recordatorios-por-correo.md), CA-4.2 y CA-4.3.
+
 ### RF-4 — Cerrar sesión (HU-4)
 
 - **CA-4.1:** Cuando el usuario pulse "Salir", el sistema deberá borrar la sesión de ese navegador y mostrar la pantalla de inicio de sesión.

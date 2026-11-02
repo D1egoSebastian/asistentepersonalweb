@@ -76,3 +76,16 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Alternativa descartada 2:** `chart.js/auto`. Registra todos los tipos de gráfico y plugins, y suma al bundle código que la app no usa.
 - **Alternativa descartada 3:** Recharts. Depende de React y de varias librerías de D3, y es más pesada para un solo gráfico de líneas. Cierra la decisión "Chart.js vs. Recharts" de `CLAUDE.md`.
 - **Accesibilidad:** el `canvas` no se lee con lector de pantalla, así que la tabla de tendencia (`TrendTable`) queda siempre visible como alternativa en texto (RNF-4).
+
+## Resend (servicio de correo, sin paquete)
+
+- **Problema que resuelve:** envía el resumen diario por correo al Gmail del dueño (spec 005, CA-5.3). Se usa desde `ResendEmailSender` con `HttpClient` contra la API REST de Resend (`POST https://api.resend.com/emails`).
+- **Por qué no alcanza lo que ya hay:** el framework puede enviar por SMTP, pero el hosting gratuito suele bloquear los puertos SMTP. Una API por HTTPS pasa por el puerto 443, que siempre está abierto.
+- **Paquetes:** ninguno (RNF-7). `HttpClient` y `System.Text.Json` vienen con el framework, así que no se agrega la librería de Resend.
+- **Alternativa descartada 1:** Gmail SMTP. El hosting gratuito bloquea el SMTP saliente y exige una contraseña de aplicación de Google guardada como secreto.
+- **Alternativa descartada 2:** la API de Gmail. Pide OAuth, una pantalla de consentimiento y renovar tokens, mucho más de lo que necesita un correo al propio dueño.
+- **Alternativa descartada 3:** una librería cliente de Resend. Es una dependencia nueva para una sola llamada HTTP.
+- **Tratamiento de datos (RNF-6):** el correo contiene el texto de las ideas del dueño (recortado a 80 caracteres) y los nombres de sus hábitos, y se envía a su propia cuenta. Resend los procesa como proveedor. La política de retención del contenido enviado **está por verificar** en la documentación vigente (tarea T04); esta entrada se completa con ese dato.
+- **Límites del plan gratuito:** **por verificar** (tarea T04): el límite de envíos frente a un correo diario, que no pida tarjeta (RNF-1) y que el remitente de prueba `onboarding@resend.dev` solo entregue a la dirección de la cuenta de Resend.
+- **Cabecera `Idempotency-Key`:** el código aún no la envía, porque su soporte no está verificado (T04). Sin ella, un envío aceptado cuya respuesta se pierde se repite en la ejecución de la hora siguiente.
+- **Secretos:** la clave vive solo en `Resend__ApiKey`. El cliente registra únicamente el código de estado de la respuesta, nunca el cuerpo, las cabeceras ni la clave (RNF-2).

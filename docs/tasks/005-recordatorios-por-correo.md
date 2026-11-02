@@ -137,32 +137,36 @@ Se entrega en dos commits (ver "Entrega"): **C4a-1** (T23 a T25) y **C4a-2** (T2
 
 ## Fase 5 — C4b: Resend, endpoint, configuración y enmiendas documentales
 
-- [ ] **T31 — Controlador: rechazo sin secreto (test primero)** · RF: CA-4.2, CA-4.3 · Plan: §6
+- [x] **T31 — Controlador: rechazo sin secreto (test primero)** · RF: CA-4.2, CA-4.3 · Plan: §6
   Hecho cuando: en `RemindersControllerTests.cs` (controlador instanciado con `DefaultHttpContext`, sin sesión) pasa `MissingOrWrongSecret_Returns401_AndSendsNothing`: sin cabecera y con cabecera incorrecta responde 401 con cuerpo vacío y el remitente falso no se llamó. Existen `Controllers/RemindersController.cs` con `[AllowAnonymous]` explícito y `Services/ReminderSecret.cs`.
+  Nota (2026-11-02): el controlador no lleva `[ApiController]` a propósito: ese atributo convierte el 401 vacío en un cuerpo `ProblemDetails` (se vio en la verificación manual). Dos tests por reflexión fijan `[AllowAnonymous]` y la ausencia de `[ApiController]`.
 
-- [ ] **T32 — Controlador: respuestas 200 y 502 (test primero)** · RF: CA-4.1, CA-4.4 · Plan: D-T8
+- [x] **T32 — Controlador: respuestas 200 y 502 (test primero)** · RF: CA-4.1, CA-4.4 · Plan: D-T8
   Hecho cuando: pasan `ValidSecret_Returns200`, `Body_HasOnlyResultAndItems` (el cuerpo tiene solo `result` e `items`, sin texto de ideas ni nombres de hábitos; `result` es `sent`, `skipped` o `failed`) y `Failed_Returns502`; el controlador solo valida el secreto y delega en `ReminderService` (principio 3).
+  Nota (2026-11-02): el controlador recibe también un `TimeProvider` (del framework, sin paquete; `Program.cs` registra `TimeProvider.System`) para que los tests fijen la hora; el plan decía `DateTimeOffset.UtcNow`. El servicio sigue sin leer el reloj (D-T2).
 
 - [x] **T33 — `ResendEmailSender` (test primero)** · RF: CA-5.3, CA-1.4, RNF-2, RNF-7 · Plan: D-T6, §5
   Hecho cuando: en `ResendEmailSenderTests.cs` (agregado al plan §10: se usa un `HttpMessageHandler` escrito a mano, sin paquetes, porque D-T6 promete "nunca lanza" y sin test esa promesa no se verifica) pasan: el cuerpo JSON es `{ from, to: [to], subject, text }` con remitente `onboarding@resend.dev`; respuesta 2xx → `true`; respuesta 4xx/5xx → `false`; `HttpRequestException` → `false`; tiempo agotado → `false`. La cabecera `Idempotency-Key` se envía solo si T04 confirmó soporte.
   Nota (2026-11-02): T04 no está verificada, así que la cabecera `Idempotency-Key` no se envía. El sender recibe también un `ILogger` (solo registra el código de estado o el tipo de error).
 
-- [ ] **T34 — Configuración y DI en `Program.cs`** · RF: RNF-2, CA-4.3 · Plan: §5, §7.1
+- [x] **T34 — Configuración y DI en `Program.cs`** · RF: RNF-2, CA-4.3 · Plan: §5, §7.1
   Hecho cuando: `Program.cs` valida `Resend__ApiKey` (obligatoria) y `Reminders__Secret` (obligatoria, 32 caracteres o más), registra `ReminderService`, `ReminderSecret` (singleton) y `AddHttpClient<IEmailSender, ResendEmailSender>` (`BaseAddress` `https://api.resend.com/`, `Bearer`, `Timeout` 15 s); `appsettings.json` sube `System.Net.Http.HttpClient` a `Warning`. Verificación manual: la API no arranca sin cada variable ni con un secreto corto, y arranca con ambas; `dotnet test` pasa.
+  Nota (2026-11-02): verificado a mano con valores de prueba: la API no arranca sin `Resend__ApiKey` (vacía o ausente), sin `Reminders__Secret` ni con un secreto de menos de 32 caracteres; arranca con ambas. La validación de largo vive en `ReminderSecret` (con tests).
 
 - [ ] **T35 — Verificación local de punta a punta** · RF: CA-1.1 a CA-1.5, CA-4.1 a CA-4.4, RNF-2 · Plan: §7.4 paso 7
   Hecho cuando: en `asistente_dev`, con una idea de 14 días o más y la hora local del dueño en 8:00 o más: `curl -X POST` sin cabecera → 401 con cuerpo vacío y sin `X-Refreshed-Token`; con la cabecera correcta → `200 {"result":"sent","items":1}` y el correo llega al Gmail; una segunda llamada → `skipped`; con una clave de Resend inválida → 502 `failed`, `DailyDigestLogs` vacía, y ni la consola ni los logs muestran la clave ni el cuerpo de la respuesta.
+  Nota (2026-11-02): PARCIAL, no se marca. Verificado en `asistente_dev` con una clave de Resend inválida: sin cabecera y con cabecera incorrecta → 401 sin cuerpo y sin `X-Refreshed-Token`; con el secreto correcto → 502 `{"result":"failed","items":1}`, `DailyDigestLogs` sin filas (la segunda llamada vuelve a dar `failed`, no `skipped`) y la clave no aparece en la salida ni en el log. Pendiente del dueño con una clave real de Resend: el envío `sent` al Gmail y el `skipped` de la segunda llamada.
 
-- [ ] **T36 — Enmienda S-4: constitución y spec 002** · RF: CA-4.3, S-4 · Plan: §9
+- [x] **T36 — Enmienda S-4: constitución y spec 002** · RF: CA-4.3, S-4 · Plan: §9
   Hecho cuando: `docs/constitution.md` principio 5 dice que todo endpoint salvo el login exige autenticación, **excepto `POST /api/reminders/daily`, protegido por un secreto compartido en `X-Reminder-Secret`** (spec 005, S-4); `docs/specs/002-login.md` tiene la misma excepción con enlace a la spec 005. Va **en el mismo commit** que el endpoint (T31, T32).
 
-- [ ] **T37 — `docs/decisions.md`: entrada de Resend** · RF: RNF-6, RNF-7, CA-5.3 · Plan: §9
+- [x] **T37 — `docs/decisions.md`: entrada de Resend** · RF: RNF-6, RNF-7, CA-5.3 · Plan: §9
   Hecho cuando: la entrada explica qué resuelve Resend (servicio por `HttpClient`, sin paquete), por qué no Gmail SMTP (bloqueado en hosting gratuito, contraseña de aplicación) ni la API de Gmail (OAuth y renovación de tokens), el tratamiento de datos (el texto de las ideas pasa por Resend; retención según T04), los límites del plan gratuito y las alternativas descartadas.
 
-- [ ] **T38 — `CLAUDE.md` y `AGENTS.md`: endpoint, variables, servicios y modelos** · RF: CA-4.3, RNF-2 · Plan: §9
+- [x] **T38 — `CLAUDE.md` y `AGENTS.md`: endpoint, variables, servicios y modelos** · RF: CA-4.3, RNF-2 · Plan: §9
   Hecho cuando: ambos agregan `POST /api/reminders/daily` y su excepción, las variables `Resend__ApiKey`, `Reminders__Secret` y `Cors__AllowedOrigin` (las de frontend `VITE_*` esperan a T53), los servicios `ReminderService`, `ReminderRules`, `ReminderText`, `ResendEmailSender` y los modelos `DailyDigestLog` y `ReminderLog`; y `diff CLAUDE.md AGENTS.md` solo muestra las diferencias de nombre de agente. No se toca la sección "Deployment".
 
-- [ ] **T39 — Cierre de C4b** · RF: RF-1, RF-4
+- [x] **T39 — Cierre de C4b** · RF: RF-1, RF-4
   Hecho cuando: `dotnet test` y `npm test` pasan; cada fila de CA-1.x a CA-4.x de la matriz del plan §11 tiene su test o su verificación (T35); la constitución, la spec 002 y el endpoint están en el mismo commit; y no hay publicación todavía.
 
 ## Fase 6 — C5: publicación (BLOQUEADA)

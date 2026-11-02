@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using AsistentePersonal.Data;
@@ -27,6 +28,17 @@ var signingKey = builder.Configuration["Jwt:SigningKey"]
 // Throws if the key is shorter than 32 characters.
 var sessionTokens = new SessionTokens(signingKey);
 
+// The reminders need the Resend key and a shared secret for the scheduled flow (spec 005, RNF-2).
+// The secret is checked for its length here, so a weak one stops the app at startup.
+var resendApiKey = builder.Configuration["Resend:ApiKey"];
+if (string.IsNullOrWhiteSpace(resendApiKey))
+{
+    throw new InvalidOperationException("Missing 'Resend:ApiKey' (environment variable Resend__ApiKey).");
+}
+
+var reminderSecret = new ReminderSecret(builder.Configuration["Reminders:Secret"]
+    ?? throw new InvalidOperationException("Missing 'Reminders:Secret' (environment variable Reminders__Secret)."));
+
 // Throws if OWNER_TIME_ZONE is missing or unknown, so a bad configuration stops the app here
 // instead of failing on every habits request.
 OwnerClock.ResolveZone(builder.Configuration[OwnerClock.TimeZoneVariable]);
@@ -45,6 +57,15 @@ builder.Services.AddSingleton<PasswordHasher<User>>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<HabitService>();
 builder.Services.AddScoped<IdeaService>();
+builder.Services.AddSingleton(reminderSecret);
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<ReminderService>();
+builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>(client =>
+{
+    client.BaseAddress = new Uri("https://api.resend.com/");
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", resendApiKey);
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 
 var app = builder.Build();
 
