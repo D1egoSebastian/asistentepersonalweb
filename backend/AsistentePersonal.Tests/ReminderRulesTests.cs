@@ -1,0 +1,168 @@
+using System.Text.Json;
+using AsistentePersonal.Models;
+using AsistentePersonal.Services;
+
+namespace AsistentePersonal.Tests;
+
+public class ReminderRulesTests
+{
+    // ---- Shared cases (spec 005, D-3): the same JSON file is read by the frontend tests ----
+
+    [Fact]
+    public void SharedCases_DailyStreak()
+    {
+        var cases = LoadCases("dailyStreakCases");
+
+        Assert.True(cases.Count >= 7);
+        foreach (var testCase in cases)
+        {
+            var logs = testCase.GetProperty("logDates").EnumerateArray().Select(d => DateOnly.Parse(d.GetString()!)).ToHashSet();
+            var today = DateOnly.Parse(testCase.GetProperty("today").GetString()!);
+
+            Assert.True(
+                testCase.GetProperty("dailyStreak").GetInt32() == ReminderRules.DailyStreak(logs, today),
+                testCase.GetProperty("name").GetString());
+        }
+    }
+
+    [Fact]
+    public void SharedCases_WeekStart()
+    {
+        var cases = LoadCases("weekStartCases");
+
+        Assert.True(cases.Count >= 5);
+        foreach (var testCase in cases)
+        {
+            var date = DateOnly.Parse(testCase.GetProperty("date").GetString()!);
+
+            Assert.True(
+                DateOnly.Parse(testCase.GetProperty("weekStart").GetString()!) == ReminderRules.WeekStart(date),
+                testCase.GetProperty("name").GetString());
+        }
+    }
+
+    [Fact]
+    public void Constants_MatchTheSpec()
+    {
+        Assert.Equal(14, ReminderRules.StaleIdeaDays);
+        Assert.Equal(3, ReminderRules.MinLostStreak);
+        Assert.Equal(80, ReminderRules.IdeaPreviewChars);
+        Assert.Equal(new TimeOnly(8, 0), ReminderRules.DigestTime);
+    }
+
+    // ---- Habit alerts (spec 005, RF-3). Today is Friday 2026-10-16; yesterday is 2026-10-15. ----
+
+    private static readonly DateOnly Today = new(2026, 10, 16);
+
+    [Fact]
+    public void MissedYesterday_DailyWithoutAYesterdayLog_Alerts()
+    {
+        var alerts = ReminderRules.HabitAlerts(Daily(), Logs(), Today);
+
+        var alert = Assert.Single(alerts);
+        Assert.Equal(AlertKind.MissedYesterday, alert.Kind);
+        Assert.Equal("Correr", alert.HabitName);
+    }
+
+    [Fact]
+    public void MissedYesterday_DailyWithAYesterdayLog_DoesNotAlert()
+    {
+        Assert.Empty(ReminderRules.HabitAlerts(Daily(), Logs("2026-10-15"), Today));
+    }
+
+    [Fact]
+    public void MissedYesterday_CreatedYesterday_DoesNotAlert()
+    {
+        Assert.Empty(ReminderRules.HabitAlerts(Daily(createdOn: "2026-10-15"), Logs(), Today));
+    }
+
+    [Fact]
+    public void MissedYesterday_CreatedTheDayBeforeYesterday_Alerts()
+    {
+        var alerts = ReminderRules.HabitAlerts(Daily(createdOn: "2026-10-14"), Logs(), Today);
+
+        Assert.Equal(AlertKind.MissedYesterday, Assert.Single(alerts).Kind);
+    }
+
+    [Fact]
+    public void MissedYesterday_Weekly_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs(), Today);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.MissedYesterday);
+    }
+
+    [Fact]
+    public void StreakLost_FiveDayStreakCutYesterday_AlertsWithItsLength()
+    {
+        var logs = Logs("2026-10-10", "2026-10-11", "2026-10-12", "2026-10-13", "2026-10-14");
+
+        var alerts = ReminderRules.HabitAlerts(Daily(), logs, Today);
+
+        var lost = Assert.Single(alerts, a => a.Kind == AlertKind.StreakLost);
+        Assert.Equal(5, lost.Streak);
+    }
+
+    [Fact]
+    public void StreakLost_ThreeDays_IsTheMinimum()
+    {
+        var alerts = ReminderRules.HabitAlerts(Daily(), Logs("2026-10-12", "2026-10-13", "2026-10-14"), Today);
+
+        Assert.Equal(3, Assert.Single(alerts, a => a.Kind == AlertKind.StreakLost).Streak);
+    }
+
+    [Fact]
+    public void StreakLost_TwoDays_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Daily(), Logs("2026-10-13", "2026-10-14"), Today);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.StreakLost);
+        Assert.Single(alerts, a => a.Kind == AlertKind.MissedYesterday);
+    }
+
+    [Fact]
+    public void StreakLost_YesterdayLogged_DoesNotAlert()
+    {
+        var logs = Logs("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15");
+
+        Assert.Empty(ReminderRules.HabitAlerts(Daily(), logs, Today));
+    }
+
+    [Fact]
+    public void StreakLost_Weekly_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3), Logs("2026-10-12", "2026-10-13", "2026-10-14"), Today);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.StreakLost);
+    }
+
+    [Fact]
+    public void TwoAlerts_SameHabit()
+    {
+        var logs = Logs("2026-10-10", "2026-10-11", "2026-10-12", "2026-10-13", "2026-10-14");
+
+        var alerts = ReminderRules.HabitAlerts(Daily(), logs, Today);
+
+        Assert.Equal([AlertKind.MissedYesterday, AlertKind.StreakLost], alerts.Select(a => a.Kind));
+        Assert.All(alerts, a => Assert.Equal("Correr", a.HabitName));
+    }
+
+    private static Habit Daily(string createdOn = "2026-08-31") => new()
+    {
+        Id = 1, UserId = 1, Name = "Correr", Frequency = Frequency.Daily, CreatedOn = DateOnly.Parse(createdOn),
+    };
+
+    private static Habit Weekly(int goal, string createdOn = "2026-08-31") => new()
+    {
+        Id = 2, UserId = 1, Name = "Gimnasio", Frequency = Frequency.Weekly, WeeklyGoal = goal, CreatedOn = DateOnly.Parse(createdOn),
+    };
+
+    private static HashSet<DateOnly> Logs(params string[] dates) => dates.Select(DateOnly.Parse).ToHashSet();
+
+    private static List<JsonElement> LoadCases(string name)
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "test-cases", "daily-streak.json");
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        return document.RootElement.GetProperty(name).EnumerateArray().Select(e => e.Clone()).ToList();
+    }
+}

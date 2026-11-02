@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\test-cases\daily-streak.json" Link="test-cases\daily-streak.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AsistentePersonal\AsistentePersonal.csproj" />
   </ItemGroup>
 

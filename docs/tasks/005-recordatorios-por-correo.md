@@ -49,16 +49,16 @@ Chain strategy: feature-branch-chain (decidido)
 
 ## Fase 1 — C2a: hábitos puros y casos compartidos
 
-- [ ] **T05 — `test-cases/daily-streak.json` y `streakCases.test.js`** · RF: D-3 · Plan: D-T11
+- [x] **T05 — `test-cases/daily-streak.json` y `streakCases.test.js`** · RF: D-3 · Plan: D-T11
   Hecho cuando: existe `test-cases/daily-streak.json` en la raíz con casos `{ today, logDates, dailyStreak }` (sin registros, hoy marcado, hoy sin marcar, racha cortada ayer contada desde anteayer, cruce de mes y de año) y casos de `weekStart` (lunes, domingo, cruce de año); `frontend/src/logic/streakCases.test.js` los lee con `fs.readFileSync` y pasa contra `dailyStreak` y `weekStart` **sin modificar** `streak.js` ni `dates.js`. Si un caso falla, se corrige el JSON, no el JS existente.
 
-- [ ] **T06 — `WeekStart` y `DailyStreak` en C# (test primero)** · RF: D-3 (CA-3.2, CA-3.4) · Plan: D-T11, §4.1
+- [x] **T06 — `WeekStart` y `DailyStreak` en C# (test primero)** · RF: D-3 (CA-3.2, CA-3.4) · Plan: D-T11, §4.1
   Hecho cuando: en `backend/AsistentePersonal.Tests/ReminderRulesTests.cs` fallan primero y luego pasan los tests `SharedCases_*` que leen el mismo JSON (el `.csproj` de tests lo copia con `<None … CopyToOutputDirectory>`, sin paquetes nuevos); `ReminderRules.WeekStart` y `ReminderRules.DailyStreak` están en `Services/ReminderRules.cs` junto a las constantes `StaleIdeaDays = 14`, `MinLostStreak = 3`, `IdeaPreviewChars = 80` y `DigestTime = 08:00` (S-8).
 
-- [ ] **T07 — Alerta `MissedYesterday` (test primero)** · RF: CA-3.1 · Plan: D-T9, §4.2
+- [x] **T07 — Alerta `MissedYesterday` (test primero)** · RF: CA-3.1 · Plan: D-T9, §4.2
   Hecho cuando: pasan en `ReminderRulesTests.cs` `MissedYesterday_*`: diario sin registro de ayer → alerta; con registro de ayer → no; **creado ayer → no** (`createdOn < ayer`); creado anteayer → sí; semanal → no. Los tipos `HabitAlert` y `AlertKind` y `HabitAlerts(habit, logs, today)` están en `ReminderRules.cs`.
 
-- [ ] **T08 — Alerta `StreakLost` y dos alertas por hábito (test primero)** · RF: CA-3.4, CA-3.5 · Plan: §4.2, S-1
+- [x] **T08 — Alerta `StreakLost` y dos alertas por hábito (test primero)** · RF: CA-3.4, CA-3.5 · Plan: §4.2, S-1
   Hecho cuando: pasan `StreakLost_*`: racha de 3 días cortada ayer → sí (con el largo de la racha, por ejemplo 5); racha de 2 → no; ayer marcado → no; semanal → no; y `TwoAlerts_SameHabit` (CA-3.1 y CA-3.4 juntas devuelven dos alertas del mismo hábito).
 
 - [ ] **T09 — Alerta `WeeklyAtRisk` (test primero)** · RF: CA-3.2 · Plan: §4.2, S-2

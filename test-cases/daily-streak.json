@@ -1,0 +1,53 @@
+{
+  "dailyStreakCases": [
+    {
+      "name": "no logs give 0",
+      "today": "2026-10-16",
+      "logDates": [],
+      "dailyStreak": 0
+    },
+    {
+      "name": "today marked counts today and the days before it",
+      "today": "2026-10-16",
+      "logDates": ["2026-10-16", "2026-10-15", "2026-10-14"],
+      "dailyStreak": 3
+    },
+    {
+      "name": "today not marked counts from yesterday",
+      "today": "2026-10-16",
+      "logDates": ["2026-10-15", "2026-10-14"],
+      "dailyStreak": 2
+    },
+    {
+      "name": "streak cut yesterday is counted from the day before yesterday",
+      "today": "2026-10-15",
+      "logDates": ["2026-10-14", "2026-10-13", "2026-10-12", "2026-10-11", "2026-10-10"],
+      "dailyStreak": 5
+    },
+    {
+      "name": "a gap in the middle stops the streak",
+      "today": "2026-10-16",
+      "logDates": ["2026-10-16", "2026-10-14"],
+      "dailyStreak": 1
+    },
+    {
+      "name": "streak crosses a month boundary",
+      "today": "2026-11-02",
+      "logDates": ["2026-11-02", "2026-11-01", "2026-10-31", "2026-10-30"],
+      "dailyStreak": 4
+    },
+    {
+      "name": "streak crosses a year boundary",
+      "today": "2027-01-02",
+      "logDates": ["2027-01-02", "2027-01-01", "2026-12-31"],
+      "dailyStreak": 3
+    }
+  ],
+  "weekStartCases": [
+    { "name": "a Monday is its own week start", "date": "2026-10-12", "weekStart": "2026-10-12" },
+    { "name": "a Friday goes back to Monday", "date": "2026-10-16", "weekStart": "2026-10-12" },
+    { "name": "a Sunday goes back six days", "date": "2026-10-18", "weekStart": "2026-10-12" },
+    { "name": "a Sunday at a month boundary", "date": "2026-11-01", "weekStart": "2026-10-26" },
+    { "name": "a Friday across the year boundary", "date": "2027-01-01", "weekStart": "2026-12-28" }
+  ]
+}
