@@ -111,13 +111,13 @@ Chain strategy: feature-branch-chain (decidido)
 
 Se entrega en dos commits (ver "Entrega"): **C4a-1** (T23 a T25) y **C4a-2** (T26 a T30).
 
-- [ ] **T23 — Contratos y `FakeEmailSender`** · RF: CA-1.4 · Plan: D-T6, §5
+- [x] **T23 — Contratos y `FakeEmailSender`** · RF: CA-1.4 · Plan: D-T6, §5
   Hecho cuando: existen `Services/IEmailSender.cs` (con `EmailMessage(To, Subject, Text, IdempotencyKey)` y `SendAsync` que devuelve `bool`), los tipos `ReminderResult` (`Sent`, `Skipped`, `Failed`) y `ReminderOutcome(Result, Items)`, y `FakeEmailSender` en el proyecto de tests (escrito a mano, guarda los mensajes y puede configurarse para devolver `false`); todo compila y `dotnet test` sigue en verde.
 
-- [ ] **T24 — Envío a las 8:00 al correo del dueño (test primero)** · RF: CA-1.1, CA-1.5, RNF-3 · Plan: §4.3
+- [x] **T24 — Envío a las 8:00 al correo del dueño (test primero)** · RF: CA-1.1, CA-1.5, RNF-3 · Plan: §4.3
   Hecho cuando: en `ReminderServiceTests.cs` (base `asistente_test`) pasan `SendsAt8_SkipsAt759` (7:59 no envía y no toca la base; 8:00 con una idea estancada envía) y `SendsToOwnerEmail`; `ReminderService.SendDailyAsync(utcNow, zone)` consulta ideas activas, reserva `DailyDigestLog` y `ReminderLog` dentro de una transacción, envía y confirma.
 
-- [ ] **T25 — Un solo resumen por día y nada que reportar (test primero)** · RF: CA-1.2, CA-1.3 · Plan: §4.3
+- [x] **T25 — Un solo resumen por día y nada que reportar (test primero)** · RF: CA-1.2, CA-1.3 · Plan: §4.3
   Hecho cuando: pasan `SecondRunSameDay_Skips` (la segunda ejecución del día devuelve `Skipped` y no envía), `NothingToReport_SkipsWithoutEmailOrDigestRow` (no se envía y **no se crea** `DailyDigestLog`) y un caso sin fila de dueño → `Skipped`. Cierra C4a-1: `dotnet test` y `npm test` pasan.
 
 - [ ] **T26 — Memoria de ideas en la base (test primero)** · RF: CA-2.2, CA-2.5, CA-2.6 · Plan: D-T3
