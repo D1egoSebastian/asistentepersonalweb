@@ -143,8 +143,9 @@ Se entrega en dos commits (ver "Entrega"): **C4a-1** (T23 a T25) y **C4a-2** (T2
 - [ ] **T32 — Controlador: respuestas 200 y 502 (test primero)** · RF: CA-4.1, CA-4.4 · Plan: D-T8
   Hecho cuando: pasan `ValidSecret_Returns200`, `Body_HasOnlyResultAndItems` (el cuerpo tiene solo `result` e `items`, sin texto de ideas ni nombres de hábitos; `result` es `sent`, `skipped` o `failed`) y `Failed_Returns502`; el controlador solo valida el secreto y delega en `ReminderService` (principio 3).
 
-- [ ] **T33 — `ResendEmailSender` (test primero)** · RF: CA-5.3, CA-1.4, RNF-2, RNF-7 · Plan: D-T6, §5
+- [x] **T33 — `ResendEmailSender` (test primero)** · RF: CA-5.3, CA-1.4, RNF-2, RNF-7 · Plan: D-T6, §5
   Hecho cuando: en `ResendEmailSenderTests.cs` (agregado al plan §10: se usa un `HttpMessageHandler` escrito a mano, sin paquetes, porque D-T6 promete "nunca lanza" y sin test esa promesa no se verifica) pasan: el cuerpo JSON es `{ from, to: [to], subject, text }` con remitente `onboarding@resend.dev`; respuesta 2xx → `true`; respuesta 4xx/5xx → `false`; `HttpRequestException` → `false`; tiempo agotado → `false`. La cabecera `Idempotency-Key` se envía solo si T04 confirmó soporte.
+  Nota (2026-11-02): T04 no está verificada, así que la cabecera `Idempotency-Key` no se envía. El sender recibe también un `ILogger` (solo registra el código de estado o el tipo de error).
 
 - [ ] **T34 — Configuración y DI en `Program.cs`** · RF: RNF-2, CA-4.3 · Plan: §5, §7.1
   Hecho cuando: `Program.cs` valida `Resend__ApiKey` (obligatoria) y `Reminders__Secret` (obligatoria, 32 caracteres o más), registra `ReminderService`, `ReminderSecret` (singleton) y `AddHttpClient<IEmailSender, ResendEmailSender>` (`BaseAddress` `https://api.resend.com/`, `Bearer`, `Timeout` 15 s); `appsettings.json` sube `System.Net.Http.HttpClient` a `Warning`. Verificación manual: la API no arranca sin cada variable ni con un secreto corto, y arranca con ambas; `dotnet test` pasa.
