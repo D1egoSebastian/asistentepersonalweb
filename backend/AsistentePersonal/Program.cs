@@ -5,6 +5,7 @@ using AsistentePersonal.Data;
 using AsistentePersonal.Models;
 using AsistentePersonal.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +44,31 @@ var reminderSecret = new ReminderSecret(builder.Configuration["Reminders:Secret"
 // instead of failing on every habits request.
 OwnerClock.ResolveZone(builder.Configuration[OwnerClock.TimeZoneVariable]);
 
+// Render terminates HTTPS in front of the app, so the scheme and client address come from the forwarded headers.
+// Its proxy addresses are not fixed, so the app accepts them from any address; the app uses them only for
+// the HTTPS redirect, never for a security decision.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// Only the published frontend may call the API from a browser (spec 005, CA-5.5). Without
+// Cors__AllowedOrigin no origin is allowed, which is the safe default.
+var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+{
+    if (!string.IsNullOrWhiteSpace(allowedOrigin))
+    {
+        policy.WithOrigins(allowedOrigin);
+    }
+
+    policy.WithMethods("GET", "POST", "PUT", "DELETE")
+        .WithHeaders("Authorization", "Content-Type", "X-Reminder-Secret")
+        .WithExposedHeaders("X-Refreshed-Token");
+}));
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -75,7 +101,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseAuthentication();
 
 // Sliding session (spec 002, CA-2.5): every response to a signed-in request carries a renewed token,

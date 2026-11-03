@@ -1,9 +1,23 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { ApiError, errorMessageFor, request, setUnauthorizedHandler } from "./http.js";
+import { ApiError, apiUrl, errorMessageFor, request, setUnauthorizedHandler } from "./http.js";
 import { clearToken, readToken, saveToken } from "./session.js";
 
 const API_URL = "/api/habits";
+
+describe("apiUrl", () => {
+  it("keeps a relative path when there is no base (development proxy)", () => {
+    assert.equal(apiUrl("/api/habits", ""), "/api/habits");
+  });
+
+  it("puts the path after the base", () => {
+    assert.equal(apiUrl("/api/habits", "https://api.example.com"), "https://api.example.com/api/habits");
+  });
+
+  it("does not double the slash when the base ends with one", () => {
+    assert.equal(apiUrl("/api/habits", "https://api.example.com/"), "https://api.example.com/api/habits");
+  });
+});
 
 describe("errorMessageFor", () => {
   it("shows the message sent by the API", () => {

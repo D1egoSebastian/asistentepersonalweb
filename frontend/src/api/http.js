@@ -9,6 +9,16 @@ const FALLBACK_MESSAGES = {
   401: SESSION_EXPIRED_MESSAGE,
 };
 
+// In production the API runs on its own host (VITE_API_URL). In development it is empty, and the Vite proxy serves /api.
+const API_BASE = import.meta.env?.VITE_API_URL ?? "";
+
+export function apiUrl(path, base = API_BASE) {
+  if (!base) {
+    return path;
+  }
+  return `${base.replace(/\/$/, "")}${path}`;
+}
+
 let unauthorizedHandler = null;
 
 // The app registers what to do when the session is missing or expired (spec 002, CA-3.3).
@@ -70,7 +80,7 @@ export async function request(method, url, body, { session = true } = {}) {
   const sessionAtStart = sessionGeneration();
   let response;
   try {
-    response = await fetch(url, {
+    response = await fetch(apiUrl(url), {
       method,
       headers: buildHeaders(body, session),
       body: body === undefined ? undefined : JSON.stringify(body),

@@ -1,0 +1,20 @@
+name: daily-reminder
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      # The secret and the API URL come from the environment, so they never appear in the script text.
+      - name: Call the daily digest
+        env:
+          API_URL: ${{ vars.API_URL }}
+          REMINDERS_SECRET: ${{ secrets.REMINDERS_SECRET }}
+        run: |
+          curl --fail-with-body --retry 2 --retry-delay 30 --retry-all-errors --max-time 90 \
+            -X POST "$API_URL/api/reminders/daily" \
+            -H "X-Reminder-Secret: $REMINDERS_SECRET"
