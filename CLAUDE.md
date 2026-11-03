@@ -172,7 +172,7 @@ La base necesita la extensión `unaccent`: la migración `AddIdeas` la crea con 
 
 - [ ] Elegir plataforma de deployment para backend
 - [x] Definir librería de gráficos: Chart.js 4.5.1 (spec 004)
-- [ ] Antes de publicar: revisar el límite de intentos de login y el token en `localStorage` (riesgos aceptados en la spec 002)
+- [x] Antes de publicar: revisar el límite de intentos de login y el token en `localStorage` (riesgos aceptados en la spec 002; decisión del dueño el 2026-11-02: se mantienen tal como están)
 
 ## Notas
 

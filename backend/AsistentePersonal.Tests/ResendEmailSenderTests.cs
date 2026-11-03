@@ -30,6 +30,16 @@ public class ResendEmailSenderTests
         Assert.Equal(Message.Text, root.GetProperty("text").GetString());
     }
 
+    [Fact]
+    public async Task SendsTheMessageKey_InIdempotencyKeyHeader()
+    {
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));
+
+        await NewSender(handler).SendAsync(Message, CancellationToken.None);
+
+        Assert.Equal("digest-2026-10-16", handler.IdempotencyKey);
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.OK, true)]
     [InlineData(HttpStatusCode.Accepted, true)]
@@ -71,10 +81,13 @@ public class ResendEmailSenderTests
 
         public string? Body { get; private set; }
 
+        public string? IdempotencyKey { get; private set; }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Method = request.Method;
             Uri = request.RequestUri?.ToString();
+            IdempotencyKey = request.Headers.TryGetValues("Idempotency-Key", out var keys) ? keys.Single() : null;
             Body = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
             return respond(request);
         }

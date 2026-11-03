@@ -66,7 +66,7 @@ Notación EARS: *ubicuo* ("El sistema deberá…"), *evento* ("Cuando…"), *est
 
 - **RNF-1 (contraseña):** la contraseña se guarda solo como hash. Nunca se guarda en texto plano, nunca se escribe en los logs y nunca se devuelve en una respuesta.
 - **RNF-2 (secretos):** la clave que firma las sesiones se toma de una variable de entorno. Nunca se escribe en el repositorio (principio 5 de la constitución).
-- **RNF-3 (riesgo aceptado):** sin límite de intentos fallidos. Esto deja la contraseña expuesta a pruebas repetidas. Se acepta mientras la app sea de uso personal y no esté publicada; antes de publicarla, esta decisión se revisa (ver CA-2.3).
+- **RNF-3 (riesgo aceptado):** sin límite de intentos fallidos. Esto deja la contraseña expuesta a pruebas repetidas. Se acepta mientras la app sea de uso personal y no esté publicada; antes de publicarla, esta decisión se revisa (ver CA-2.3). **Decisión del dueño (2026-11-02):** se mantiene sin límite de intentos también al publicar (tarea T40 de la spec 005).
 - **RNF-4 (idioma):** todos los mensajes visibles están en español neutro.
 - **RNF-5 (email):** el email se compara sin distinguir mayúsculas de minúsculas.
 

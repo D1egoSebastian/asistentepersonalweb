@@ -10,7 +10,7 @@ Fuentes: [spec](../specs/005-recordatorios-por-correo.md) · [plan](../plans/005
 - Ninguna función supera 30 líneas de lógica (principio 7). Los tests con datos usan `asistente_test`; las verificaciones manuales usan `asistente_dev`.
 - Las claves (`Resend__ApiKey`, `Reminders__Secret`) solo viven en variables de entorno. Ninguna tarea las pega en un archivo, un commit, una captura ni un log (RNF-2).
 - Las verificaciones externas (Fase 0) las ejecuta el dueño con ayuda del agente; el resultado se anota como "Nota (fecha)" en la tarea. Si un resultado contradice el plan, se detiene el trabajo y se avisa al dueño: el agente no cambia las decisiones del plan.
-- Las tareas de la Fase 6 (C5) están **BLOQUEADAS** hasta que el dueño decida sobre el límite de intentos de login y el token en `localStorage` (T40).
+- Las tareas de la Fase 6 (C5) estaban **BLOQUEADAS** hasta que el dueño decidiera sobre el límite de intentos de login y el token en `localStorage` (T40). Decidido el 2026-11-02: están desbloqueadas, pero no se ejecutan sin aprobación explícita.
 
 ## Review Workload Forecast
 
@@ -46,6 +46,7 @@ Chain strategy: feature-branch-chain (decidido)
 
 - [ ] **T04 — Resend: límites, retención e idempotencia** · RF: RNF-6, CA-1.4, plan §13
   Hecho cuando: con la documentación vigente de Resend queda anotado: si la cabecera `Idempotency-Key` está soportada (decide si T33 la envía), el límite de envíos del plan gratuito frente a 1 correo diario, la política de retención del contenido enviado (alimenta la entrada de T37) y si el remitente de prueba solo entrega a la dirección de la cuenta.
+  **Nota (2026-11-02, documentación consultada):** `Idempotency-Key` **sí está soportada** en `POST /emails`: ventana de 24 horas y clave de hasta 256 caracteres. Con la misma clave y el mismo contenido devuelve la respuesta original sin reenviar el correo. Esto contradice lo que decía `docs/decisions.md`; por aprobación del dueño, T33 ya la envía. **Pendiente:** límites del plan gratuito, retención y remitente de prueba (no verificados).
 
 ## Fase 1 — C2a: hábitos puros y casos compartidos
 
@@ -147,7 +148,7 @@ Se entrega en dos commits (ver "Entrega"): **C4a-1** (T23 a T25) y **C4a-2** (T2
 
 - [x] **T33 — `ResendEmailSender` (test primero)** · RF: CA-5.3, CA-1.4, RNF-2, RNF-7 · Plan: D-T6, §5
   Hecho cuando: en `ResendEmailSenderTests.cs` (agregado al plan §10: se usa un `HttpMessageHandler` escrito a mano, sin paquetes, porque D-T6 promete "nunca lanza" y sin test esa promesa no se verifica) pasan: el cuerpo JSON es `{ from, to: [to], subject, text }` con remitente `onboarding@resend.dev`; respuesta 2xx → `true`; respuesta 4xx/5xx → `false`; `HttpRequestException` → `false`; tiempo agotado → `false`. La cabecera `Idempotency-Key` se envía solo si T04 confirmó soporte.
-  Nota (2026-11-02): T04 no está verificada, así que la cabecera `Idempotency-Key` no se envía. El sender recibe también un `ILogger` (solo registra el código de estado o el tipo de error).
+  Nota (2026-11-02): T04 confirmó soporte, así que la cabecera `Idempotency-Key` se envía con la clave del mensaje (`digest-{fecha}`); lo verifica `SendsTheMessageKey_InIdempotencyKeyHeader`. El sender recibe también un `ILogger` (solo registra el código de estado o el tipo de error). `dotnet test`: 290/290.
 
 - [x] **T34 — Configuración y DI en `Program.cs`** · RF: RNF-2, CA-4.3 · Plan: §5, §7.1
   Hecho cuando: `Program.cs` valida `Resend__ApiKey` (obligatoria) y `Reminders__Secret` (obligatoria, 32 caracteres o más), registra `ReminderService`, `ReminderSecret` (singleton) y `AddHttpClient<IEmailSender, ResendEmailSender>` (`BaseAddress` `https://api.resend.com/`, `Bearer`, `Timeout` 15 s); `appsettings.json` sube `System.Net.Http.HttpClient` a `Warning`. Verificación manual: la API no arranca sin cada variable ni con un secreto corto, y arranca con ambas; `dotnet test` pasa.
@@ -169,18 +170,21 @@ Se entrega en dos commits (ver "Entrega"): **C4a-1** (T23 a T25) y **C4a-2** (T2
 - [x] **T39 — Cierre de C4b** · RF: RF-1, RF-4
   Hecho cuando: `dotnet test` y `npm test` pasan; cada fila de CA-1.x a CA-4.x de la matriz del plan §11 tiene su test o su verificación (T35); la constitución, la spec 002 y el endpoint están en el mismo commit; y no hay publicación todavía.
 
-## Fase 6 — C5: publicación (BLOQUEADA)
+## Fase 6 — C5: publicación (DESBLOQUEADA, NO INICIADA)
 
-**Bloqueo:** `CLAUDE.md` ("Próximas decisiones") exige revisar el límite de intentos de login y el token en `localStorage` antes de publicar, y la spec 005 no los trata. Ninguna tarea de esta fase empieza hasta cerrar T40. Esta tarea documenta el bloqueo; **no lo resuelve**.
+**Desbloqueo (2026-11-02):** T40 cerrada por el dueño. Ninguna tarea de esta fase se ejecuta sin su aprobación explícita.
 
-- [ ] **T40 — BLOQUEO: decisión del dueño sobre login y `localStorage`** · RF: plan §13, spec 002
+- [x] **T40 — BLOQUEO: decisión del dueño sobre login y `localStorage`** · RF: plan §13, spec 002
   Hecho cuando: el dueño decide por escrito si acepta los dos riesgos tal como están o los resuelve antes de publicar, y la decisión queda registrada en esta tarea. Si decide resolverlos, eso es una spec nueva y no entra en la 005. El agente no decide ni implementa nada aquí.
+  **Decidido (2026-11-02):** el dueño acepta ambos riesgos tal como están, también al publicar: sin límite de intentos de login (spec 002, RNF-3) y token en `localStorage` (`docs/decisions.md`). La fase 6 queda desbloqueada; cada tarea de C5 necesita aprobación explícita antes de ejecutarse, porque publica y crea cuentas en servicios externos.
 
-- [ ] **T41 — BLOQUEADA · Verificar backend y contenedor** · RF: CA-5.2, CA-5.5 · Plan: §13
+- [ ] **T41 — EN CURSO · Verificar backend y contenedor** · RF: CA-5.2, CA-5.5 · Plan: §13
   Hecho cuando: se anotan los datos vigentes de: etiquetas `mcr.microsoft.com/dotnet/sdk:10.0` y `aspnet:10.0` y si la imagen trae datos de zonas horarias; el nombre vigente en ASP.NET Core 10 para vaciar las redes conocidas de `ForwardedHeadersOptions` (`KnownNetworks` podría estar obsoleto); la variable de puerto que usa Render (`PORT`) y su mapa a `ASPNETCORE_HTTP_PORTS`; y las horas gratuitas de Render y de cómputo de Neon frente a ~24 despertares diarios.
+  **Nota (2026-11-02, documentación consultada):** `KnownNetworks` está obsoleto en ASP.NET Core 10; el reemplazo es `KnownIPNetworks` con `System.Net.IPNetwork` (aviso ASPDEPR005). Render: el plan gratuito duerme tras 15 minutos sin tráfico y despierta en unos 60 segundos; hay 750 horas gratuitas por mes. Con un cron horario, el servicio queda despierto unos 16 minutos por hora, unas 200 horas al mes, dentro del tope. Neon: las fuentes dan cifras distintas de cómputo gratuito (191,9 horas frente a 100 CU-horas por proyecto); **confirmar en la página oficial de planes antes de decidir.** Pendiente: etiquetas de imagen `mcr.microsoft.com/dotnet/sdk:10.0` y `aspnet:10.0`, y la variable `PORT` de Render.
 
-- [ ] **T42 — BLOQUEADA · Verificar frontend y Actions** · RF: CA-5.1, CA-5.4, CA-5.6 · Plan: §13
+- [ ] **T42 — EN CURSO · Verificar frontend y Actions** · RF: CA-5.1, CA-5.4, CA-5.6 · Plan: §13
   Hecho cuando: se anotan las versiones vigentes de `checkout`, `setup-node`, `upload-pages-artifact` y `deploy-pages`, y que Pages gratuito exige repositorio público para la cuenta del dueño.
+  **Nota (2026-11-02, documentación consultada):** `actions/upload-pages-artifact` está en v5.0.0 según su página de releases. `actions/deploy-pages`: no pude confirmar la última versión; la línea v4 es la de los ejemplos oficiales. `checkout`, `setup-node` y el requisito de repositorio público no se verificaron todavía.
 
 - [ ] **T43 — BLOQUEADA · CORS y cabeceras reenviadas en `Program.cs`** · RF: CA-5.5 · Plan: D-T14, D-T15, §7.1
   Hecho cuando: el orden del pipeline es `UseForwardedHeaders` → `UseHttpsRedirection` → `UseCors` → autenticación → sesión → autorización → controladores; la política CORS usa `Cors__AllowedOrigin`, métodos `GET, POST, PUT, DELETE`, cabeceras `Authorization`, `Content-Type` y `X-Reminder-Secret`, y expone `X-Refreshed-Token`. No hay prueba automática (`WebApplicationFactory` exige un paquete nuevo, principio 4); verificación manual con `curl` y `Origin`: el origen configurado recibe `Access-Control-Allow-Origin`, otro origen no, y la verificación previa (`OPTIONS`) pasa; `dotnet test` pasa.
@@ -240,7 +244,7 @@ Presupuesto de revisión: 400 líneas cambiadas por commit (estimaciones a mano 
 | C4a-1 `feat(reminders): send the digest at 8:00 with a fake sender` | T23 a T25 | ≈ 230 | No |
 | C4a-2 `feat(reminders): remember ideas, add habit alerts and survive failures` | T26 a T30 | ≈ 200 | No |
 | C4b `feat(reminders): send the daily digest through Resend` | T31 a T39 | ≈ 380 (código, tests, 4 documentos) | **Al límite.** Si pasa de 400, las enmiendas documentales (T36 a T38) siguen en este commit por el principio 2 y se parte `ResendEmailSender` con sus tests (T33) en un commit anterior |
-| C5 `ci: publish frontend to GitHub Pages and schedule daily digest` | T40 a T53 | ≈ 230 | No. **BLOQUEADO por T40** |
+| C5 `ci: publish frontend to GitHub Pages and schedule daily digest` | T40 a T53 | ≈ 230 | No. Desbloqueado por T40 (2026-11-02); pendiente de aprobación del dueño |
 | C6 `docs: close spec 005 tasks` | T54, T55 y notas | ≈ 60 | No |
 
 **Commits que pasan de 400 líneas sin partir:** ninguno. Sí pasaban en el plan: C1 (≈ 440 + tareas), C2 (≈ 650) y C4 (≈ 750); aquí están partidos en C1a/b/c, C2a/b y C4a-1/C4a-2/C4b.

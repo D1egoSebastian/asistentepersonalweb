@@ -8,6 +8,7 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Riesgo:** si alguien logra ejecutar JavaScript en la página (XSS), puede leer el token y usarlo hasta que venza.
 - **Por qué se acepta por ahora:** es una app personal, sin contenido de terceros ni HTML generado por usuarios, y React escapa el texto por defecto.
 - **Alternativa descartada por ahora:** cookie `HttpOnly`, que JavaScript no puede leer. Se revisa antes de publicar la app.
+- **Decisión del dueño (2026-11-02):** se acepta tal como está, también al publicar la app. La cookie `HttpOnly` queda como alternativa si cambia el riesgo.
 - **Paquetes:** no hizo falta ninguno nuevo para el login. `PasswordHasher` viene con el framework de ASP.NET Core, y los tokens usan las librerías que ya trae `Microsoft.AspNetCore.Authentication.JwtBearer`.
 
 ## Npgsql.EntityFrameworkCore.PostgreSQL
@@ -87,5 +88,5 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Alternativa descartada 3:** una librería cliente de Resend. Es una dependencia nueva para una sola llamada HTTP.
 - **Tratamiento de datos (RNF-6):** el correo contiene el texto de las ideas del dueño (recortado a 80 caracteres) y los nombres de sus hábitos, y se envía a su propia cuenta. Resend los procesa como proveedor. La política de retención del contenido enviado **está por verificar** en la documentación vigente (tarea T04); esta entrada se completa con ese dato.
 - **Límites del plan gratuito:** **por verificar** (tarea T04): el límite de envíos frente a un correo diario, que no pida tarjeta (RNF-1) y que el remitente de prueba `onboarding@resend.dev` solo entregue a la dirección de la cuenta de Resend.
-- **Cabecera `Idempotency-Key`:** el código aún no la envía, porque su soporte no está verificado (T04). Sin ella, un envío aceptado cuya respuesta se pierde se repite en la ejecución de la hora siguiente.
+- **Cabecera `Idempotency-Key`:** el código la envía con la clave `digest-{fecha}`. Resend la admite con una ventana de 24 horas (verificado en su documentación el 2026-11-02, T04). Así, un envío aceptado cuya respuesta se pierde no se repite en la ejecución de la hora siguiente.
 - **Secretos:** la clave vive solo en `Resend__ApiKey`. El cliente registra únicamente el código de estado de la respuesta, nunca el cuerpo, las cabeceras ni la clave (RNF-2).

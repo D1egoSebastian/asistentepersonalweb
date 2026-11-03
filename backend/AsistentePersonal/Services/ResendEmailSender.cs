@@ -11,13 +11,15 @@ public class ResendEmailSender(HttpClient http, ILogger<ResendEmailSender> logge
     // Resend's test sender: it only delivers to the address of the Resend account (plan D-T18).
     private const string From = "onboarding@resend.dev";
 
-    // The Idempotency-Key header is not sent: Resend's support for it is still unverified (task T04).
+    // Idempotency-Key makes Resend ignore a repeated send of the same digest within 24 hours (task T04).
     public async Task<bool> SendAsync(EmailMessage message, CancellationToken cancellationToken)
     {
         var body = new { from = From, to = new[] { message.To }, subject = message.Subject, text = message.Text };
+        using var request = new HttpRequestMessage(HttpMethod.Post, "emails") { Content = JsonContent.Create(body) };
+        request.Headers.Add("Idempotency-Key", message.IdempotencyKey);
         try
         {
-            using var response = await http.PostAsJsonAsync("emails", body, cancellationToken);
+            using var response = await http.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogWarning("Resend answered with status {StatusCode}.", (int)response.StatusCode);
