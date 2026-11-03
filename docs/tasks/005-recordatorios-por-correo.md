@@ -32,8 +32,9 @@ Chain strategy: feature-branch-chain (decidido)
 
 ## Fase 0 — Preparación y verificaciones previas (sin código de producción)
 
-- [ ] **T00 — Confirmar spec y plan aprobados** · RF: —
+- [x] **T00 — Confirmar spec y plan aprobados** · RF: —
   Hecho cuando: el dueño confirma por escrito las dos lecturas del plan §14 (D-T9 "período existió completo" y D-T4 `ReminderLog` con `IdeaId`) y la spec no tiene dudas abiertas distintas de D-1, D-2 y D-3. Si el dueño cambia alguna, se vuelve al plan antes de seguir.
+  **Nota (2026-11-02):** el dueño confirma D-T9 (hábitos nuevos: diarios cuentan desde `createdOn < ayer`, semanales desde `< lunes pasado`) y D-T10 (racha limitada a 14 días). Para CA-3.2, por indicación del dueño ("lo que recomiendes"): no alertar a un hábito semanal en la semana en que se creó; implementada con el test `WeeklyAtRisk_CreatedThisWeek_DoesNotAlert` (la spec 005, CA-3.2, lo recoge). El dueño confirma también D-T4 (`ReminderLog` con `IdeaId`), así que T00 queda hecha.
 
 - [ ] **T01 — RNF-1: ningún servicio pide tarjeta** · RF: RNF-1, CA-5.2
   Hecho cuando: se comprobó en el alta del plan gratuito de Neon, Render, Resend y GitHub Pages (repositorio público) que ninguno exige tarjeta, y el resultado por servicio queda anotado en la tarea. Si alguno la exige, se descarta ese servicio y se avisa al dueño antes de implementar; el agente no elige reemplazo.

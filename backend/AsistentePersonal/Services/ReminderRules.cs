@@ -75,9 +75,10 @@ public static class ReminderRules
         var goal = habit.WeeklyGoal ?? 0;
 
         // The week is at risk when the days left (today included) are no more than the logs still missing.
+        // A habit created this week has no alert until the next one, as with the daily rule (plan D-T9).
         var done = logs.Count(date => date >= monday && date <= today);
         var daysLeft = 7 - (today.DayNumber - monday.DayNumber);
-        if (done < goal && daysLeft <= goal - done)
+        if (habit.CreatedOn < monday && done < goal && daysLeft <= goal - done)
         {
             yield return new HabitAlert(AlertKind.WeeklyAtRisk, habit.Name, Done: done, Goal: goal, DaysLeft: daysLeft);
         }

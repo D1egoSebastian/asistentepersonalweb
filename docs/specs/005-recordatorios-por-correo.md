@@ -53,7 +53,7 @@ Notación EARS, igual que en la spec 002.
 Todas las reglas usan los registros del hábito y el día del dueño. "Hoy" aún no tiene registro cuando llega el correo de las 8:00.
 
 - **CA-3.1 — Ayer no cumplí (diario):** Cuando un hábito diario existía ayer y no tiene registro de ayer, el sistema deberá incluir la alerta.
-- **CA-3.2 — Meta semanal en riesgo (semanal):** Mientras la semana en curso tenga menos cumplimientos que la meta, y los días que quedan (incluido hoy) sean igual o menos que los cumplimientos que faltan, el sistema deberá incluir la alerta.
+- **CA-3.2 — Meta semanal en riesgo (semanal):** Mientras la semana en curso tenga menos cumplimientos que la meta, y los días que quedan (incluido hoy) sean igual o menos que los cumplimientos que faltan, el sistema deberá incluir la alerta. No se incluye si el hábito se creó en la semana en curso: la alerta empieza la semana siguiente (decisión del dueño, 2026-11-02).
 - **CA-3.3 — Semana pasada fallada (semanal):** Cuando sea lunes y el hábito semanal existía durante la semana anterior con menos cumplimientos que su meta, el sistema deberá incluir la alerta.
 - **CA-3.4 — Racha perdida (diario):** Cuando un hábito diario tenga una racha de 3 días o más que se cortó ayer (no hay registro de ayer, pero sí de los 3 días anteriores a ayer), el sistema deberá incluir la alerta.
 - **CA-3.5:** Cada hábito puede aparecer con más de una alerta, una línea por alerta.

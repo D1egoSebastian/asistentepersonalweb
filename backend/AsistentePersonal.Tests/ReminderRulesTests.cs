@@ -312,6 +312,22 @@ public class ReminderRulesTests
         Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
     }
 
+    [Fact]
+    public void WeeklyAtRisk_CreatedThisWeek_DoesNotAlert()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3, createdOn: "2026-10-14"), Logs(), Today);
+
+        Assert.DoesNotContain(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+    }
+
+    [Fact]
+    public void WeeklyAtRisk_CreatedLastWeek_Alerts()
+    {
+        var alerts = ReminderRules.HabitAlerts(Weekly(3, createdOn: "2026-10-08"), Logs(), Today);
+
+        Assert.Single(alerts, a => a.Kind == AlertKind.WeeklyAtRisk);
+    }
+
     // ---- LastWeekMissed: today is Monday 2026-10-19; the week before is 2026-10-12 to 2026-10-18 ----
 
     private static readonly DateOnly NextMonday = new(2026, 10, 19);
