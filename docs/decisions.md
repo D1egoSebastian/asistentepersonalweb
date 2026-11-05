@@ -90,3 +90,11 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Límites del plan gratuito:** **por verificar** (tarea T04): el límite de envíos frente a un correo diario, que no pida tarjeta (RNF-1) y que el remitente de prueba `onboarding@resend.dev` solo entregue a la dirección de la cuenta de Resend.
 - **Cabecera `Idempotency-Key`:** el código la envía con la clave `digest-{fecha}`. Resend la admite con una ventana de 24 horas (verificado en su documentación el 2026-11-02, T04). Así, un envío aceptado cuya respuesta se pierde no se repite en la ejecución de la hora siguiente.
 - **Secretos:** la clave vive solo en `Resend__ApiKey`. El cliente registra únicamente el código de estado de la respuesta, nunca el cuerpo, las cabeceras ni la clave (RNF-2).
+
+## Google Fonts (Instrument Serif, Hanken Grotesk, JetBrains Mono)
+
+- **Problema que resuelve:** da la identidad tipográfica del rediseño de la app: titulares, texto de cuerpo y datos numéricos. Se cargan desde la hoja de Google Fonts en `frontend/index.html`.
+- **Por qué no alcanza lo que ya hay:** `system-ui` se ve distinto en cada sistema operativo y no separa los tres roles tipográficos que pide el diseño.
+- **Paquetes:** ninguno. Son archivos de Google Fonts, no una dependencia de npm, así que no entran al bundle.
+- **Coste:** una petición externa a `fonts.googleapis.com` y `fonts.gstatic.com`. Si la hoja no carga, la app usa `Georgia`, `system-ui` o `ui-monospace` (fallbacks de las variables `--font-*`).
+- **Privacidad:** Google recibe la IP del navegador al cargar la hoja. Es una petición de terceros que antes no existía. Si se quiere evitar, las fuentes pueden alojarse en `frontend/public`.

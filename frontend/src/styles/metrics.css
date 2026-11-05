@@ -1,14 +1,14 @@
 /* Colors of the trend chart. They follow the same light/dark rule as habits.css (CA-7.6).
    The third chart color, the text of the axes, is --color-text from habits.css (light and dark). */
 :root {
-  --color-chart-line: #1565c0;
-  --color-chart-grid: #d0d0d0;
+  --color-chart-line: #4f6242;
+  --color-chart-grid: #d5cfbe;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-chart-line: #90caf9;
-    --color-chart-grid: #3a3a3a;
+    --color-chart-line: #a8ba8a;
+    --color-chart-grid: #36332a;
   }
 }
 
@@ -35,12 +35,12 @@
 
 .metrics-page h1 {
   margin: 8px 0 0;
-  font-size: 1.5rem;
+  font-size: 2.4rem;
 }
 
 .metrics-page h2 {
   margin: 0 0 8px;
-  font-size: 1.2rem;
+  font-size: 1.6rem;
 }
 
 .metrics-page p {
@@ -116,7 +116,7 @@
 
 .metric-card__header h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.6rem;
   overflow-wrap: anywhere;
 }
 
@@ -126,7 +126,9 @@
 }
 
 .metric-card__streaks {
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 /* History grid: fixed layout keeps the table inside the card, even at 375 px. */
