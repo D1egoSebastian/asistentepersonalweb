@@ -1,24 +1,28 @@
+/* Palette from the landing page: warm paper, ink and one moss accent. Green and red stay as status colors. */
 :root {
-  --color-green: #1b5e20;
-  --color-red: #b71c1c;
-  --color-pending: #424242;
-  --color-surface: #ffffff;
-  --color-text: #1a1a1a;
-  --color-muted: #5f5f5f;
-  --color-border: #d0d0d0;
-  --color-focus: #1565c0;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-green: #4f6242;
+  --color-red: #9a3b2e;
+  --color-pending: #5c5a52;
+  --color-surface: #f4f0e6;
+  --color-text: #1b1a17;
+  --color-muted: #5c5a52;
+  --color-border: #d5cfbe;
+  --color-focus: #4f6242;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-surface: #1e1e1e;
-    --color-text: #f2f2f2;
-    --color-muted: #b0b0b0;
-    --color-border: #3a3a3a;
-    --color-green: #81c784;
-    --color-red: #ef9a9a;
-    --color-pending: #bdbdbd;
-    --color-focus: #90caf9;
+    --color-surface: #161511;
+    --color-text: #ece7d8;
+    --color-muted: #a29e90;
+    --color-border: #36332a;
+    --color-green: #a8ba8a;
+    --color-red: #d9897a;
+    --color-pending: #a29e90;
+    --color-focus: #a8ba8a;
   }
 }
 
@@ -26,8 +30,20 @@ body {
   margin: 0;
   background: var(--color-surface);
   color: var(--color-text);
-  font-family: system-ui, sans-serif;
-  line-height: 1.4;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.22;
+  font-variation-settings: "SOFT" 50;
 }
 
 .app {
@@ -45,12 +61,17 @@ textarea {
 
 button {
   min-height: 44px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-text);
   cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, color 0.25s;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--color-text);
 }
 
 button:disabled {
@@ -100,10 +121,10 @@ textarea:focus-visible {
 }
 
 .habit-card {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border: 1px solid var(--color-border);
-  border-left: 8px solid var(--color-pending);
-  border-radius: 8px;
+  border-left: 6px solid var(--color-pending);
+  border-radius: 12px;
 }
 
 .habit-card--green {
@@ -123,7 +144,7 @@ textarea:focus-visible {
 
 .habit-card__header h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.6rem;
   overflow-wrap: anywhere;
 }
 
@@ -166,14 +187,14 @@ textarea:focus-visible {
   display: grid;
   gap: 12px;
   margin: 16px 0;
-  padding: 16px;
+  padding: 18px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .habit-form h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.6rem;
 }
 
 .habit-form label {

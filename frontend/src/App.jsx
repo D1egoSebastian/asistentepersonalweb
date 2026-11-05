@@ -78,6 +78,7 @@ export default function App() {
       {screen === "app" && (
         <>
           <header className="app-header">
+            <p className="app-brand">Asistente Personal</p>
             <nav className="app-tabs" aria-label="Secciones">
               <button type="button" aria-pressed={tab === "habits"} onClick={() => setTab("habits")}>
                 Hábitos
