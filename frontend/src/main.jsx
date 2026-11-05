@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import "./styles/habits.css";
 import "./styles/ideas.css";
 import "./styles/metrics.css";
+import "./styles/shell.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

@@ -1,0 +1,378 @@
+/* Signed-in shell and the "Hoy" screen (spec 006). Colors come from the tokens in habits.css; card and clay are added here. */
+:root {
+  --color-card: #ece7d8;
+  --color-clay: #b5654a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-card: #1f1d17;
+    --color-clay: #d9897a;
+  }
+}
+
+/* The shell needs the full width, so it drops the narrow column that the sign-in screens use. */
+.app:has(> .shell) {
+  max-width: none;
+  padding: 0;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* Side rail: brand, four destinations, sign out, and the summary time. */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 28px 18px;
+  border-right: 1px solid var(--color-border);
+}
+
+.rail-brand {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-variation-settings: "SOFT" 100;
+  line-height: 1;
+}
+
+.rail-nav {
+  display: grid;
+  gap: 4px;
+}
+
+.rail-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  color: var(--color-muted);
+  text-align: left;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+.rail-link:hover {
+  color: var(--color-text);
+}
+
+.rail-link[aria-current="page"] {
+  background: var(--color-card);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.rail-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.rail-logout {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--color-muted);
+}
+
+.rail-footnote {
+  margin: auto 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.shell-content {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 36px clamp(20px, 4vw, 56px) 60px;
+}
+
+/* Hoy: the day is the home screen. Two columns on wide screens; the capture panel sits beside the habits. */
+.hoy {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.hoy-eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.hoy-date {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4.6vw, 3.8rem);
+  font-weight: 500;
+  font-variation-settings: "SOFT" 80;
+  line-height: 1.08;
+}
+
+.hoy-summary {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: 28px 0 8px;
+}
+
+.hoy-summary p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.hoy-summary strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.hoy-ring {
+  width: 96px;
+  height: 96px;
+  flex: none;
+}
+
+.hoy-ring circle {
+  fill: none;
+  stroke-width: 8;
+}
+
+.hoy-ring__track {
+  stroke: var(--color-border);
+}
+
+.hoy-ring__value {
+  stroke: var(--color-green);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hoy-habits {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hoy-habit {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hoy-habit h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.hoy-habit p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.hoy-check {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--color-text);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-surface);
+  transition: background-color 0.25s, border-color 0.25s;
+}
+
+.hoy-check svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.hoy-check[aria-pressed="true"] {
+  background: var(--color-green);
+  border-color: var(--color-green);
+}
+
+.hoy-check[aria-pressed="true"] svg {
+  opacity: 1;
+}
+
+.hoy-streak {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.hoy-streak--risk {
+  color: var(--color-clay);
+}
+
+.hoy-panel {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 16px;
+  background: var(--color-card);
+}
+
+.hoy-panel h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.hoy-capture {
+  display: grid;
+  gap: 10px;
+}
+
+.hoy-capture textarea {
+  width: 100%;
+  min-height: 84px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  font: inherit;
+  resize: vertical;
+}
+
+.hoy-capture button {
+  justify-self: start;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-text);
+  color: var(--color-surface);
+}
+
+.hoy-capture button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.hoy-block h2 {
+  margin-bottom: 12px;
+}
+
+.hoy-alerts,
+.hoy-ideas {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hoy-alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 14px;
+}
+
+.hoy-alert i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--color-clay);
+}
+
+.hoy-ideas li {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  font-size: 15px;
+}
+
+.hoy-ideas small {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.hoy-empty,
+.hoy-loading {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+/* Narrow screens: the rail becomes a bottom bar and the two columns stack. */
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+    padding-bottom: 72px;
+  }
+
+  .rail {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 10;
+    flex-direction: row;
+    gap: 0;
+    padding: 8px 12px;
+    border-top: 1px solid var(--color-border);
+    border-right: none;
+    background: var(--color-surface);
+  }
+
+  .rail-brand,
+  .rail-footnote,
+  .rail-logout {
+    display: none;
+  }
+
+  .rail-nav {
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    gap: 0;
+  }
+
+  .rail-link {
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 4px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .rail-count {
+    display: none;
+  }
+
+  .hoy {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}

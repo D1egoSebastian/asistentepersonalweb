@@ -138,6 +138,23 @@ public class IdeaServiceTests
         Assert.Equal(new DateOnly(2026, 10, 26), item.CreatedDate);
     }
 
+    [Fact]
+    public async Task List_ComputesTheUpdatedDate_InTheOwnerZone()
+    {
+        // Edited at 03:00 UTC on the 28th: still the 27th in La Paz (UTC-4).
+        await SeedOwnersAsync();
+        await using var db = await TestDatabase.OpenAsync();
+        var service = new IdeaService(db);
+        var created = await service.CreateAsync(UserId, "Editada", null, Now);
+        var id = created.Value!.Id;
+        var version = (await service.GetAsync(UserId, id)).Value!.Version;
+        await service.UpdateAsync(UserId, id, "Editada otra vez", null, version, new DateTimeOffset(2026, 10, 28, 3, 0, 0, TimeSpan.Zero));
+
+        var item = Assert.Single(await service.ListAsync(UserId, archived: false, search: null, tag: null, OwnerZone));
+
+        Assert.Equal(new DateOnly(2026, 10, 27), item.UpdatedDate);
+    }
+
     // ---- T10: search and tag filter ----
 
     [Fact]
