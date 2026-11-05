@@ -40,5 +40,5 @@ export function useHabitList() {
     [reload],
   );
 
-  return { today, habits, error, run };
+  return { today, habits, error, run, reload };
 }

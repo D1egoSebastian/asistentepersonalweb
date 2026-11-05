@@ -54,10 +54,10 @@ Notación EARS, igual que en las specs anteriores.
 - **CA-2.1:** El sistema deberá mostrar la fecha de hoy con el día de la semana en español.
 - **CA-2.2:** El sistema deberá mostrar cuántos hábitos están hechos hoy sobre el total de hábitos, con un anillo de progreso. Si no hay hábitos, deberá mostrar un mensaje que invite a crear el primero en "Hábitos", sin anillo.
 - **CA-2.3:** El sistema deberá listar los hábitos en el mismo orden que la spec 001 (CA-2.2), cada uno con su estado de hoy.
-- **CA-2.4:** Cada hábito deberá mostrar una línea con su meta: "Diario" para hábitos diarios, o "N veces por semana · X de N esta semana" para semanales. Si la racha actual es de 2 días o más, deberá mostrarla a la derecha.
+- **CA-2.4:** Cada hábito deberá mostrar una línea con su meta: "Diario" para hábitos diarios, o "N veces por semana · X de N esta semana" para semanales. Si la racha actual es de 2 días o más, deberá mostrarla a la derecha. Si el hábito está en rojo según `habitStatus` (diario: ayer sin marca; semanal: la semana anterior sin cumplir meta), deberá mostrar "en riesgo" en color de alerta en lugar de la racha. Esa marca no es una alerta: no genera ninguna lista aparte.
 - **CA-2.5:** Cuando el dueño marque o desmarque un hábito, el sistema deberá actualizar el anillo y el contador sin recargar la pantalla, y llamar a la API del registro de hoy.
 - **CA-2.6:** Si la llamada a la API falla, entonces el sistema deberá deshacer el cambio visual y mostrar un mensaje de error breve.
-- **CA-2.7:** Un hábito semanal que ya cumplió su meta deberá mostrarse como hecho aunque no se haya marcado hoy, y no deberá ofrecer marcarse de nuevo.
+- **CA-2.7:** Un hábito cuenta como hecho hoy solo si su fecha de hoy está registrada. Un hábito semanal que ya cumplió su meta de la semana muestra ese avance en su línea de meta, pero su estado de hoy no cambia.
 
 ### RF-3 — Captura rápida (HU-3)
 
@@ -76,7 +76,7 @@ Notación EARS, igual que en las specs anteriores.
 
 ### RF-5 — Últimas ideas (HU-3)
 
-- **CA-5.1:** El sistema deberá mostrar las cinco ideas activas más recientes por fecha de creación, con su fecha relativa ("hace 2 h", "ayer").
+- **CA-5.1:** El sistema deberá mostrar las cinco ideas activas más recientes por fecha de creación, con su fecha relativa ("hoy", "ayer", "hace N días").
 - **CA-5.2:** Si no hay ideas activas, el sistema deberá mostrar el texto "Todavía no anotaste ideas", sin botones adicionales.
 
 ### RF-6 — Resumen por correo (HU-1)
@@ -85,7 +85,7 @@ Notación EARS, igual que en las specs anteriores.
 
 ### RF-7 — Estados de carga y error
 
-- **CA-7.1:** Mientras "Hoy" carga, el sistema deberá mostrar un esquema vacío con la misma estructura, sin cifras de relleno.
+- **CA-7.1:** Mientras "Hoy" carga, el sistema deberá mostrar el texto "Cargando…", sin cifras de relleno.
 - **CA-7.2:** Si la lista de hábitos no se puede cargar, entonces el sistema deberá mostrar un mensaje con la opción de reintentar y no deberá mostrar cifras parciales (igual que CA-1.4 de la spec 004).
 
 ## 7. Alcance técnico (orientativo)
@@ -94,7 +94,7 @@ Notación EARS, igual que en las specs anteriores.
 - `src/hooks/useHoy.js`: carga hábitos e ideas, y expone las acciones de marcar y guardar.
 - `src/pages/HoyPage.jsx` y `src/components/`: solo muestran.
 - `src/App.jsx`: pasa a cuatro destinos y a la nueva navegación. Las pestañas de "Hábitos", "Ideas" y "Métricas" no cambian su contenido.
-- Sin endpoints nuevos ni cambios en `Services/`.
+- Backend: un único cambio. El resumen de ideas (`IdeaSummaryResponse` y `IdeaListItem`) gana `updatedDate` (fecha de última edición en la zona del dueño). "Para revisar" lo necesita y el resumen no lo traía. Es un campo nuevo en una respuesta existente; no agrega endpoints.
 
 ## 8. Fuera de alcance
 
@@ -108,4 +108,5 @@ Notación EARS, igual que en las specs anteriores.
 
 - **"Para revisar" solo muestra ideas sin editar.** Las alertas de hábitos en riesgo no se repiten en "Hoy": la regla vive en el servidor y duplicarla en el cliente sería una segunda fuente de verdad.
 - **La pestaña inicial pasa a ser "Hoy".** Si las specs 001 o 002 fijan otra pestaña inicial, esta spec la reemplaza y se actualizan en el mismo commit.
-- **Sin endpoints nuevos.** Todo sale de `GET /api/habits` y `GET /api/ideas`.
+- **Sin endpoints nuevos.** Los datos salen de `GET /api/habits` y `GET /api/ideas`. El segundo gana `updatedDate` en cada resumen (ver sección 7).
+- **Contadores de la barra:** "Hoy" muestra hechos sobre total; "Hábitos" y "Ideas", cuántos hay; "Métricas" no muestra número en esta versión.

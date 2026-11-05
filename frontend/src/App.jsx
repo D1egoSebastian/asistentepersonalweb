@@ -2,21 +2,18 @@ import { useCallback, useEffect, useState } from "react";
 import { getStatus } from "./api/authApi.js";
 import { setUnauthorizedHandler } from "./api/http.js";
 import { clearToken, readToken } from "./api/session.js";
+import AppShell from "./components/AppShell.jsx";
 import ErrorBanner from "./components/ErrorBanner.jsx";
-import HabitsPage from "./pages/HabitsPage.jsx";
-import IdeasPage from "./pages/IdeasPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
-import MetricsPage from "./pages/MetricsPage.jsx";
 import SetupPage from "./pages/SetupPage.jsx";
 
 const SESSION_EXPIRED = "Tu sesión expiró. Vuelve a iniciar sesión.";
 
-// Decides which screen to show: first use, sign in, or the app with its habits, ideas and metrics tabs (spec 002, plan §4).
-// Only the open tab is mounted, so leaving a tab drops its state and opening "Métricas" always loads a fresh list (spec 004, D-T8).
+// Decides which screen to show: first use, sign in, or the signed-in shell with its "Hoy", habits, ideas and metrics screens (spec 002, plan §4; spec 006).
+// Only the open screen is mounted, so leaving a tab drops its state and opening "Métricas" always loads a fresh list (spec 004, D-T8).
 export default function App() {
   const [screen, setScreen] = useState("loading");
   const [notice, setNotice] = useState(null);
-  const [tab, setTab] = useState("habits");
 
   const decideScreen = useCallback(async () => {
     try {
@@ -75,30 +72,7 @@ export default function App() {
         <SetupPage onSessionStarted={handleSessionStarted} onAccountExists={handleAccountExists} />
       )}
       {screen === "login" && <LoginPage notice={notice} onSessionStarted={handleSessionStarted} />}
-      {screen === "app" && (
-        <>
-          <header className="app-header">
-            <p className="app-brand">Asistente Personal</p>
-            <nav className="app-tabs" aria-label="Secciones">
-              <button type="button" aria-pressed={tab === "habits"} onClick={() => setTab("habits")}>
-                Hábitos
-              </button>
-              <button type="button" aria-pressed={tab === "ideas"} onClick={() => setTab("ideas")}>
-                Ideas
-              </button>
-              <button type="button" aria-pressed={tab === "metrics"} onClick={() => setTab("metrics")}>
-                Métricas
-              </button>
-            </nav>
-            <button type="button" onClick={handleLogout}>
-              Salir
-            </button>
-          </header>
-          {tab === "habits" && <HabitsPage />}
-          {tab === "ideas" && <IdeasPage />}
-          {tab === "metrics" && <MetricsPage />}
-        </>
-      )}
+      {screen === "app" && <AppShell onLogout={handleLogout} />}
     </main>
   );
 }
