@@ -67,7 +67,11 @@ public class IdeaService(AppDbContext db)
 
         return ideas
             .Select(i => new IdeaListItem(
-                i.Id, IdeaRules.Summary(i.Text), i.Tags, OwnerClock.TodayAt(i.CreatedAt, ownerZone)))
+                i.Id,
+                IdeaRules.Summary(i.Text),
+                i.Tags,
+                OwnerClock.TodayAt(i.CreatedAt, ownerZone),
+                OwnerClock.TodayAt(i.UpdatedAt, ownerZone)))
             .ToList();
     }
 
