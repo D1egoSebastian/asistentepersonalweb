@@ -91,7 +91,7 @@ Registro de cada paquete externo que se agrega al proyecto, según el principio 
 - **Cabecera `Idempotency-Key`:** el código la envía con la clave `digest-{fecha}`. Resend la admite con una ventana de 24 horas (verificado en su documentación el 2026-11-02, T04). Así, un envío aceptado cuya respuesta se pierde no se repite en la ejecución de la hora siguiente.
 - **Secretos:** la clave vive solo en `Resend__ApiKey`. El cliente registra únicamente el código de estado de la respuesta, nunca el cuerpo, las cabeceras ni la clave (RNF-2).
 
-## Google Fonts (Instrument Serif, Hanken Grotesk, JetBrains Mono)
+## Google Fonts (Fraunces, Hanken Grotesk, JetBrains Mono)
 
 - **Problema que resuelve:** da la identidad tipográfica del rediseño de la app: titulares, texto de cuerpo y datos numéricos. Se cargan desde la hoja de Google Fonts en `frontend/index.html`.
 - **Por qué no alcanza lo que ya hay:** `system-ui` se ve distinto en cada sistema operativo y no separa los tres roles tipográficos que pide el diseño.
