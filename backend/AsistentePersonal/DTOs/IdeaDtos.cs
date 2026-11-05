@@ -4,7 +4,9 @@ namespace AsistentePersonal.DTOs;
 public sealed record IdeaRequest(string? Text, List<string>? Tags, uint? Version);
 
 // One row of the list: the summary, not the full text (plan D-T3).
-public sealed record IdeaSummaryResponse(int Id, string Summary, IReadOnlyList<string> Tags, DateOnly CreatedDate);
+// updatedDate is the last edit day in the owner's zone; "Para revisar" uses it to find ideas left untouched for 14 days.
+public sealed record IdeaSummaryResponse(
+    int Id, string Summary, IReadOnlyList<string> Tags, DateOnly CreatedDate, DateOnly UpdatedDate);
 
 public sealed record IdeaListResponse(IReadOnlyList<IdeaSummaryResponse> Ideas);
 

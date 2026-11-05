@@ -132,7 +132,7 @@ public class IdeasController(IdeaService ideas) : ControllerBase
     };
 
     private static IdeaSummaryResponse ToSummary(IdeaListItem item) =>
-        new(item.Id, item.Summary, item.Tags, item.CreatedDate);
+        new(item.Id, item.Summary, item.Tags, item.CreatedDate, item.UpdatedDate);
 
     private static IdeaResponse ToResponse(Idea idea) => new(
         idea.Id,
