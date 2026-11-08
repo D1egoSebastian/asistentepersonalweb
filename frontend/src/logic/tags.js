@@ -58,3 +58,24 @@ export function filterOptions(tagCounts, archived) {
     .map((tag) => tag.name)
     .sort((a, b) => a.localeCompare(b, "es"));
 }
+
+// A hashtag starts a word: "#libros" counts, "C#" or "issue#4" do not.
+const HASHTAG = /(^|\s)#([^\s#,]+)/g;
+
+// Quick capture: "leer más #libros" saves the text "leer más" with the tag "libros".
+// When the idea is only hashtags, their words stay as the text so it is never empty.
+export function extractHashtags(input) {
+  const words = [...input.matchAll(HASHTAG)].map((match) => match[2]);
+  if (words.length === 0) {
+    return { text: input, tags: [] };
+  }
+
+  const tags = words.reduce((chosen, word) => addTag(chosen, word), []);
+  const text = input
+    .replace(HASHTAG, "$1")
+    .split("\n")
+    .map((line) => line.replace(/[ \t]{2,}/g, " ").trim())
+    .join("\n")
+    .trim();
+  return { text: text === "" ? words.join(" ") : text, tags };
+}

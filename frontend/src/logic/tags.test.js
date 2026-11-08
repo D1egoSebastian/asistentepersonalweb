@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { addTag, filterOptions, normalizeTag, splitTags, suggestTags, MAX_TAGS_PER_IDEA } from "./tags.js";
+import { addTag, extractHashtags, filterOptions, normalizeTag, splitTags, suggestTags, MAX_TAGS_PER_IDEA } from "./tags.js";
 
 describe("normalizeTag", () => {
   it("trims the ends and removes one leading #", () => {
@@ -87,5 +87,31 @@ describe("filterOptions", () => {
 
   it("offers only tags with an archived idea in the archived section", () => {
     assert.deepEqual(filterOptions(tagCounts, true), ["Cine", "Libros"]);
+  });
+});
+
+describe("extractHashtags", () => {
+  it("moves each #word into the tags and removes it from the text", () => {
+    assert.deepEqual(extractHashtags("test prueba de idea #test"), { text: "test prueba de idea", tags: ["test"] });
+  });
+
+  it("finds hashtags anywhere and keeps the first spelling of a repeated one", () => {
+    assert.deepEqual(extractHashtags("#App leer más #libros sobre #app diseño"), {
+      text: "leer más sobre diseño",
+      tags: ["App", "libros"],
+    });
+  });
+
+  it("leaves a # inside a word alone", () => {
+    assert.deepEqual(extractHashtags("canal C#  y issue#4"), { text: "canal C#  y issue#4", tags: [] });
+  });
+
+  it("keeps the words as text when the idea is only hashtags", () => {
+    assert.deepEqual(extractHashtags("#viajes #ideas"), { text: "viajes ideas", tags: ["viajes", "ideas"] });
+  });
+
+  it("stops at the tag limit", () => {
+    const text = Array.from({ length: MAX_TAGS_PER_IDEA + 2 }, (_, i) => `#t${i}`).join(" ") + " algo";
+    assert.equal(extractHashtags(text).tags.length, MAX_TAGS_PER_IDEA);
   });
 });

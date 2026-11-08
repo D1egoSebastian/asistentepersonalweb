@@ -63,6 +63,7 @@ Notación EARS, igual que en las specs anteriores.
 
 - **CA-3.1:** El sistema deberá mostrar un área de texto "Anota lo que se te ocurra" con un botón "Guardar idea".
 - **CA-3.2:** Cuando el dueño envíe una idea con texto, el sistema deberá crearla con `POST /api/ideas`, limpiar el área y mostrar la idea en "Para revisar" o en "Últimas ideas", según corresponda.
+- **CA-3.6:** Cada palabra que empiece con "#" (por ejemplo, "leer más #libros") deberá guardarse como etiqueta y salir del texto. Un "#" dentro de una palabra ("C#") no cuenta. Si la idea solo tiene etiquetas, sus palabras quedan como texto.
 - **CA-3.3:** Mientras el texto esté vacío o solo tenga espacios, el botón deberá estar deshabilitado.
 - **CA-3.4:** Si la creación falla, entonces el sistema deberá conservar el texto escrito y mostrar un mensaje de error.
 - **CA-3.5:** El texto de la idea deberá respetar el límite de la spec 003 (5.000 caracteres); el contador o el error aparecen antes de enviar.
@@ -109,4 +110,6 @@ Notación EARS, igual que en las specs anteriores.
 - **"Para revisar" solo muestra ideas sin editar.** Las alertas de hábitos en riesgo no se repiten en "Hoy": la regla vive en el servidor y duplicarla en el cliente sería una segunda fuente de verdad.
 - **La pestaña inicial pasa a ser "Hoy".** Si las specs 001 o 002 fijan otra pestaña inicial, esta spec la reemplaza y se actualizan en el mismo commit.
 - **Sin endpoints nuevos.** Los datos salen de `GET /api/habits` y `GET /api/ideas`. El segundo gana `updatedDate` en cada resumen (ver sección 7).
+- **Tema claro siempre:** la app usa la paleta clara del prototipo aunque el sistema esté en modo oscuro (`data-theme="light"` en `index.html`). Reemplaza el seguimiento del modo oscuro de la spec 004 (CA-7.6).
+- **Marcado inmediato:** al marcar un hábito, el check y el anillo cambian al instante; si el servidor falla, vuelven al estado real.
 - **Contadores de la barra:** "Hoy" muestra hechos sobre total; "Hábitos" y "Ideas", cuántos hay; "Métricas" no muestra número en esta versión.
