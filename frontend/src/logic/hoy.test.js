@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { habitDoneToday, todayProgress, staleIdeas, latestIdeas, relativeDay, todayHeading } from "./hoy.js";
+import { applyTodayOverrides, habitDoneToday, todayProgress, staleIdeas, latestIdeas, relativeDay, todayHeading } from "./hoy.js";
 
 // 2026-11-03 is a Tuesday.
 const TODAY = "2026-11-03";
@@ -95,5 +95,22 @@ describe("todayHeading", () => {
 
   it("uses the real weekday of the date", () => {
     assert.equal(todayHeading("2026-11-08").weekday, "Domingo");
+  });
+});
+
+describe("applyTodayOverrides", () => {
+  it("marks or unmarks today right away, before the server answers", () => {
+    const habits = [habit(1, ["2026-11-02"]), habit(2, ["2026-11-02", TODAY]), habit(3, [])];
+
+    const shown = applyTodayOverrides(habits, { 1: true, 2: false }, TODAY);
+
+    assert.deepEqual(shown.map((item) => habitDoneToday(item, TODAY)), [true, false, false]);
+    assert.deepEqual(shown[0].logDates, ["2026-11-02", TODAY]);
+  });
+
+  it("returns the same habits when nothing is pending", () => {
+    const habits = [habit(1, [TODAY])];
+
+    assert.equal(applyTodayOverrides(habits, {}, TODAY)[0], habits[0]);
   });
 });

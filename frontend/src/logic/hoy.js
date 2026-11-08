@@ -45,3 +45,16 @@ export function todayHeading(today) {
   const weekday = WEEKDAYS[new Date(year, month - 1, day).getDay()];
   return { weekday, dayOfMonth: `${day} de ${MONTHS[month - 1]}` };
 }
+
+// Shows a toggle right away: `overrides` maps a habit id to "done today" while the server call runs.
+export function applyTodayOverrides(habits, overrides, today) {
+  return habits.map((habit) => {
+    if (!Object.hasOwn(overrides, habit.id) || overrides[habit.id] === habitDoneToday(habit, today)) {
+      return habit;
+    }
+    const logDates = overrides[habit.id]
+      ? [...habit.logDates, today]
+      : habit.logDates.filter((date) => date !== today);
+    return { ...habit, logDates };
+  });
+}

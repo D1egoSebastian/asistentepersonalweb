@@ -101,7 +101,7 @@ export default function HoyPage({ hoy }) {
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
-            placeholder="Anota lo que se te ocurra…"
+            placeholder="Anota lo que se te ocurra… usa #etiqueta para etiquetar"
             aria-label="Nueva idea"
           />
           <button type="submit" disabled={text.trim() === ""}>
